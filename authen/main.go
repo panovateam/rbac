@@ -1,25 +1,57 @@
 package authen
 
 import (
-	"github.com/onskycloud/go-redis"
+	"encoding/json"
+	"github.com/labstack/echo"
 	"github.com/onskycloud/errors"
-	"github.com/onskycloud/resource-helper"
-	"github.com/onskycloud/rbac/authen/model"
-	"github.com/mitchellh/mapstructure"
+	"github.com/onskycloud/go-redis"
+	"github.com/onskycloud/rbac/model"
+	"github.com/onskycloud/rbac/utl"
+	resourcehelper "github.com/onskycloud/resource-helper"
+	"github.com/micro/go-micro/metadata"
+	"context"
 )
-
 
 // ServiceName Seperate Char
 const ServiceName = "rbac"
 
-const UserCacheKey = ""
-func User(c echo.Context) *model.AuthUser {
+// ResourceAll resource key
+const ResourceAll = "*"
+
+// ResourceList resource key
+const ResourceList = "List"
+
+// RBAC model representation
+type RBAC struct {
+	DB *redis.Redis
+	UserCacheKey string
+	ActionCacheKey string
+	CustomerCacheKey string
+	Key string
+	Algo string
+}
+// Init init redis receiver
+func Init(db *redis.Redis,userCacheKey string,actionCacheKey string, customerCacheKey string, key string, algo string) *RBAC {
+	return &RBAC{
+		DB:db,
+		UserCacheKey:userCacheKey,
+		ActionCacheKey: actionCacheKey,
+		CustomerCacheKey:customerCacheKey,
+		Key:key,
+		Algo:algo,
+	}
+}
+
+// UserFromContext instance
+func (r *RBAC) UserFromContext(c echo.Context) *model.AuthUser {
+	customer := new(model.Customer)
+
 	id := c.Get("id").(int)
 	customerID := c.Get("customer_id").(int)
 	customerNumber := c.Get("customer_number").(string)
 	user := c.Get("username").(string)
-	role := c.Get("role").(int8)
-	userUuid := c.Get("user_uuid").(string)
+	role := c.Get("role").(uint8)
+	userUUID := c.Get("user_uuid").(string)
 
 	//check cache
 	result := model.AuthUser{
@@ -27,25 +59,60 @@ func User(c echo.Context) *model.AuthUser {
 		Username:       user,
 		CustomerNumber: customerNumber,
 		CustomerID:     customerID,
-		UserUuid:       userUuid,
+		UserUuid:       userUUID,
 		Role:           model.AccessRole(role),
 	}
-	err := enforceRole(role,model.CustomerUserRole)
-	if err!=nil{
+
+	err := enforceRole(role, model.CustomerUserRole)
+	if err != nil {
 		return &result
 	}
-		customer := helper.GetCustomerCache(customerNumber, self.redis)
-		if customer != nil && customer.Clients != nil {
-			cliTemp := funk.Map(customer.Clients, func(item model.Customer) string {
-				return item.AccNumber
-			})
-			if cliTemp != nil {
-				result.Clients = cliTemp.([]string)
-			}
-		}
+
+	err = getDataFromCache(r.DB, r.CustomerCacheKey, customerNumber, customer)
+	if err != nil || customer == nil || customer.Clients == nil {
+		return &result
+	}
+
+	for i := 0; i < len(customer.Clients); i++ {
+		result.Clients = append(result.Clients, customer.Clients[i].AccNumber)
+	}
+
 	return &result
 }
-//only have permission when meet requirement policy and resouce
+// UserFromMetadata instance
+func (r *RBAC) UserFromMetadata(ctx context.Context) (*model.AuthUser,error) {
+	customer := new(model.Customer)
+
+	meta, ok := metadata.FromContext(ctx)
+	if !ok {
+		return nil, errors.Forbidden(ServiceName, "rbac:authen:UserFromMetadata:invalidParams")
+	}
+	token := meta["authorization"]
+	if token == "" {
+		return nil, errors.Forbidden(ServiceName, "rbac:authen:UserFromMetadata:missingToken")
+	}
+	result,err:= utl.ParseToken(r.Key,r.Algo,token)
+	if err!=nil{
+		return nil,err
+	}
+
+	err = enforceRole(uint8(result.Role), model.CustomerUserRole)
+	if err != nil {
+		return result,nil
+	}
+
+	err = getDataFromCache(r.DB, r.CustomerCacheKey, result.CustomerNumber, customer)
+	if err != nil || customer == nil || customer.Clients == nil {
+		return result,nil
+	}
+
+	for i := 0; i < len(customer.Clients); i++ {
+		result.Clients = append(result.Clients, customer.Clients[i].AccNumber)
+	}
+
+	return result,nil
+}
+// EnforcePolicy only have permission when meet requirement policy and resouce
 // params:
 // - serviceName string
 // - action string
@@ -55,219 +122,171 @@ func User(c echo.Context) *model.AuthUser {
 // - patrition string
 // - region string
 // EnforcePolicy enfore policy
-func EnforcePolicy(db *redis.Redis,cacheKey string, action string, compareResources ...string) ([]string, error) {
-	var policies []model.Policy
-	var cacheItem interface{}
-	var assignedResources []string
+func (r *RBAC) EnforcePolicy(role uint8, customerNumber string, userUUID string, action string, compareResources ...string) ([]string, error) {
+	user := &model.User{}
+	actionCache := &resourcehelper.ItemActionCache{}
 
-	if action == "" || db == nil{
-		return nil ,errors.Forbidden(ServiceName, "enforcePolicy:invalidParams")
+	if action == "" || r == nil || role == 0 || customerNumber == "" || userUUID == "" {
+		return nil, errors.Forbidden(ServiceName, "enforcePolicy:invalidParams")
 	}
-	actionCache := &ItemActionCache{}
 
-		var temp interface{}
-		err := db.GetObject(cacheKey, action, &temp)
-		if err != nil {
-			if err.Error()=="redis: nil"{
-			// TODO: update cache by get from db
-			return nil,errors.Forbidden(ServiceName, "enforcePolicy:notFound")
-			}
-			return nil, err
-		}
-		err = mapstructure.Decode(temp.(map[string]interface{}), &actionCache)
-			if err != nil {
-				return nil,err
-			}
+	err := getDataFromCache(r.DB, r.ActionCacheKey, action, actionCache)
+	if err != nil {
+		return nil, err
+	}
 	if actionCache.Name == "" {
-		return nil,errors.Forbidden(ServiceName, "enforcePolicy:invalidAction")
+		return nil, errors.Forbidden(ServiceName, "enforcePolicy:invalidAction")
 	}
 
-	auth := User(c)
-	if auth == nil {
-		return nil, errors.Forbidden(ServiceName, "enforcePolicy:invalidCustomer")
+	results, err := checkAdmin(role, compareResources, actionCache, customerNumber)
+	if err != nil {
+		return nil, err
 	}
 	//---if role is superadmin,admin , bypass check policy (fullacess)
-	err = enforceRole(role,model.AdminRole)
-	if err == nil{
-		var results []string
-		for _, v := range compareResources {
-			rItem := resourceHelper.GetResourceFormat(v, actionCache, auth.CustomerNumber)
-			if rItem == nil {
-				return nil, errors.Forbidden(ServiceName, "enforcePolicy:invalidCustomer")
-			}
-			results = append(results, rItem.ToString())
-		}
+	if results != nil {
 		return results, nil
 	}
-	/*------------------------------------------------------------------------------------------------------------*/
+
 	//check resource, if empty set value "*"
 	if compareResources == nil || len(compareResources) == 0 {
-		compareResources = []string{"*"}
+		compareResources = []string{ResourceAll}
 	}
 	//-------------get policies of user-------------
-		err = db.GetObject(UserCacheKey, auth.UserUuid, &cacheItem)
-		if err != nil {
-			if err.Error()=="redis: nil"{
-				// TODO: update cache by get from db
-			// err = self.micro.GetPolicies(auth.UserUuid, &policies)
-			return nil,errors.Forbidden(ServiceName, "enforcePolicy:user:notFound")
-			}
-			return nil,err
-
-		}
-			var raw = cacheItem.(map[string]interface{})
-			if (raw == nil || raw["policies"] == nil){
-				// TODO: get from db
-				// err = self.micro.GetPolicies(auth.UserUuid, &policies)
-			}
-			if raw != nil && raw["policies"] != nil {
-				originalPolicies := raw["policies"].([]interface{})
-				err := mapstructure.Decode(originalPolicies, &policies)
-				if err != nil {
-					return nil, errors.Forbidden(ServiceName, "enforcePolicy:policy:wrongData")
-				}
-			}
-			if (raw == nil || raw["policies"] == nil){
-				return nil, errors.Forbidden(ServiceName, "enforcePolicy:policy:notFound")
-			}
-
-			if policies != nil && len(policies) > 0 {
-
-		// fmt.Println("EnforcePolicy 8.1 - policies ok ")
-		funk.ForEach(policies, func(p model.Policy) {
-			funk.ForEach(p.ResourceTypes, func(r model.ResourceType) {
-				isMatchAction := funk.Contains(r.Actions, action) || funk.Contains(r.Actions, "*")
-				if isMatchAction {
-					//--refine to make sure that any item does not contain each other.
-					resourceArray := funk.Filter(r.Resources, func(item string) bool {
-						temp := funk.Find(assignedResources, func(x string) bool {
-							isOk, _, _ := helper.ParseResource(item, x, actionCache, auth.CustomerNumber)
-							return isOk
-						})
-						return temp == nil
-
-					}).([]string)
-
-					if resourceArray != nil && len(resourceArray) > 0 {
-						funk.ForEach(resourceArray, func(item string) {
-							//filter items not match new resource item
-							//make sure that any item does not contain each other.
-							assignedResources = funk.Filter(assignedResources, func(ors string) bool {
-								isOk, _, _ := helper.ParseResource(ors, item, actionCache, auth.CustomerNumber)
-								fmt.Printf("EnforcePolicy 8.1 - isOk:%v\n", isOk)
-								return !isOk
-							}).([]string)
-							// fmt.Printf("item:%v\n", item)
-
-							// fmt.Printf("assignedResources:%v\n", assignedResources)
-							assignedResources = append(assignedResources, item)
-
-						})
-
-					}
-				}
-			})
-		})
+	err = getDataFromCache(r.DB, r.UserCacheKey, userUUID, user)
+	if err != nil {
+		return nil, err
 	}
-	// fmt.Printf("assignedResources:%v\n", assignedResources)
-	// fmt.Printf("compareResources:%v\n", compareResources)
-	/*------------------------------------------------------------------------------------------------------------*/
-	//check formart of parseResourceStr must follow `orn:%s:%s:%s:%s:%s/%s`
-	// fmt.Println("EnforcePolicy 9 - check formart of parseResourceStr must follow orn.....")
-	// fmt.Printf("EnforcePolicy 9 - compareResources: %+v\n, condition: %+v\n", compareResources, compareResources == nil || len(compareResources) == 0)
-	invalidResource := funk.Find(compareResources, func(item string) bool {
-		err := helper.CheckResourceFormat(item, actionCache, auth.CustomerNumber)
-		return err != nil
-	})
 
-	if invalidResource != nil {
-		// fmt.Printf("EnforcePolicy 9.1 - invalid resource != nil: %+v\n", invalidResource)
-		return nil, model.ErrUnauthorized
+	assignedResources := getAssignedResources(action, actionCache, customerNumber, user.Policies)
+	err = checkInvalidResource(compareResources, actionCache, customerNumber)
+	if err != nil {
+		return nil, err
 	}
-	//
-	var resultResources []string
-	/*------------------------------------------------------------------------------------------------------------*/
-	findResource := func(parseResourceStr string) ([]string, error) {
-		//---------------------
-		//compareWith parseResourceStr, find resource item  match the request
-		// fmt.Println("EnforcePolicy 10 - func findResource - compareWith parseResourceStr, find resource item  match the request")
-		for _, element := range assignedResources {
-			isOk, dataSourceObject, _ := helper.ParseResource(parseResourceStr, element, actionCache, auth.CustomerNumber)
-			// fmt.Printf("ParseResource:%v - element:%v - dataSourceObject :%v\n", parseResourceStr, element, dataSourceObject)
-			if !isOk {
-				// is all-item
-				// only happend when LIST and param *, if the origin resource is not *, ParseResource will be failed
-				// fmt.Printf("ParseResource:%v - element:%v\n", dataSourceObject.Resource, actionCache)
 
-				if dataSourceObject.Resource == "*" && actionCache.Type == "List" {
-					//if type action is LIST
-					//collect all resources which is assigned to user
-					resultResources = append(resultResources, assignedResources...)
-					break
-				}
-			} else {
-				resultResources = append(resultResources, dataSourceObject.ToString())
-				break
-			}
-		}
-		// fmt.Printf("resultResources:%v\n", resultResources)
-		// fmt.Printf("resultResources:%v\n", resultResources)
-		if resultResources != nil && len(resultResources) > 0 {
-			// fmt.Println("EnforcePolicy 10.2 - resultResource > 0 ___ ok")
-			return resultResources, nil
-		}
-		// fmt.Println("EnforcePolicy 10.3 - resultResource is nil or len == 0 ___ not ok")
-		return nil, model.ErrUnauthorized
-
+	result := getResources(compareResources, assignedResources, actionCache, customerNumber)
+	if result == nil || len(result) == 0 {
+		return nil, errors.Forbidden(ServiceName, "enforcePolicy:restricted")
 	}
-	/*------------------------------------------------------------------------------------------------------------*/
-	invalidItem := funk.Find(compareResources, func(resourceItem string) bool {
-		// fmt.Printf("resourceItem:%v\n", resourceItem)
-		_, err := findResource(resourceItem)
-		// if err != nil {
-		// 	fmt.Printf("err:%v\n", err)
-		// }
-		return err != nil
-	})
-	// on invalid item found
-	// fmt.Printf("invalidItem:%v\n", invalidItem)
-	if invalidItem == nil {
-		// fmt.Println("EnforcePolicy 10.4 - invalid item ok")
-		return resultResources, nil
-	}
-	// fmt.Printf("EnforcePolicy 10.5 - invalid item not ok: %+v\n", invalidItem)
-	return nil, model.ErrUnauthorized
+	return result, nil
 }
 
-//--
-func enforceCustomer(role int) error {
-	return enforceRole(role, model.CustomerUserRole)
-}
-
-//--
-func enforceAdmin(role int) error {
-	return enforceRole(role, model.AdminRole)
-}
-
-//-- Client
-func enforceClient(role int) error {
-	return enforceRole(role, model.ClientAdminRole)
-}
-func enforceUserClient(role int) error {
-	return enforceRole(role, model.ClientUserRole)
-}
 // EnforceRole authorizes request by AccessRole
-func enforceRole(role int, roleBase model.AccessRole) error {
-	if role<= roleBase{
+func enforceRole(role uint8, roleBase model.AccessRole) error {
+	if role <= uint8(roleBase) {
 		return nil
 	}
 	return errors.Forbidden(ServiceName, "enforcePolicy:forbidden")
 }
+func getAssignedResources(action string, actionCache *resourcehelper.ItemActionCache, customerNumber string, policies []model.Policy) []string {
+	result := []string{}
+	resources := []string{}
+	if policies == nil || len(policies) == 0 {
+		return result
+	}
+	for i := 0; i < len(policies); i++ {
+		for j := 0; j < len(policies[i].ResourceTypes); j++ {
+			resourceType := policies[i].ResourceTypes[j]
+			isMatch := resourcehelper.Contains(resourceType.Actions, action) || resourcehelper.Contains(resourceType.Actions, "*")
+			if !isMatch {
+				continue
+			}
+			//--refine to make sure that any item does not contain each other.
+			for k := 0; k < len(resourceType.Resources); k++ {
+				temp := ""
+				for m := 0; m < len(result); m++ {
+					ok, _, _ := resourcehelper.ParseResource(resourceType.Resources[k], result[m], actionCache, customerNumber)
+					if !ok {
+						continue
+					}
+					temp = result[m]
+				}
+				if temp != "" {
+					continue
+				}
+				resources = append(resources, resourceType.Resources[k])
+			}
+			if len(resources) == 0 {
+				continue
+			}
 
-// ItemActionCache item cache for action
-type ItemActionCache struct {
-	Name         string `json:"name,omitempty"`
-	ResourceType string `json:"resourceType,omitempty"`
-	Type         string `json:"type,omitempty"`
-	Service      string `json:"service,omitempty"`
+			//filter items not match new resource item
+			//make sure that any item does not contain each other.
+			for k := 0; k < len(resources); k++ {
+				assignedResources := []string{}
+				for m := 0; m < len(result); m++ {
+					ok, _, _ := resourcehelper.ParseResource(result[m], resources[k], actionCache, customerNumber)
+					if ok {
+						continue
+					}
+					assignedResources = append(assignedResources, result[m])
+				}
+				result = append(result, resources[k])
+			}
+		}
+	}
+	return result
+}
+func checkInvalidResource(compareResources []string, actionCache *resourcehelper.ItemActionCache, customerNumber string) error {
+	for i := 0; i < len(compareResources); i++ {
+		result := resourcehelper.GetResourceFormat(compareResources[i], actionCache, customerNumber)
+		if result == nil {
+			return errors.Forbidden(ServiceName, "enforcePolicy:invalidResource")
+		}
+	}
+	return nil
+}
+func getResources(compareResources []string, assignedResources []string, actionCache *resourcehelper.ItemActionCache, customerNumber string) []string {
+	result := []string{}
+
+	for i := 0; i < len(compareResources); i++ {
+		for j := 0; j < len(assignedResources); j++ {
+			ok, dataSourceObject, _ := resourcehelper.ParseResource(compareResources[i], assignedResources[j], actionCache, customerNumber)
+			if ok {
+				result = append(result, dataSourceObject.ToString())
+			}
+			if dataSourceObject.Resource == ResourceAll && actionCache.Type == ResourceList {
+				result = append(result, assignedResources...)
+			}
+		}
+	}
+	return result
+}
+
+func getDataFromCache(db *redis.Redis, key string, field string, result interface{}) error {
+	var temp interface{}
+	err := db.GetObject(key, field, &temp)
+	if err != nil {
+		if err.Error() == errors.RedisEmpty {
+			// TODO: update cache by get from db
+			return errors.NotFound(ServiceName, "enforcePolicy:notFound")
+		}
+		return err
+	}
+	b, err := json.Marshal(temp)
+	if err != nil {
+		return errors.InternalServerError(ServiceName, "enforcePolicy:marshalProblem")
+	}
+	json.Unmarshal(b, result)
+
+	if result == nil {
+		return errors.InternalServerError(ServiceName, "enforcePolicy:wrongData")
+	}
+	return nil
+}
+
+func checkAdmin(role uint8, compareResources []string, actionCache *resourcehelper.ItemActionCache, customerNumber string) ([]string, error) {
+	var results []string
+	err := enforceRole(role, model.AdminRole)
+	if err != nil {
+		return nil, nil
+	}
+	for i := 0; i < len(compareResources); i++ {
+		resource := resourcehelper.GetResourceFormat(compareResources[i], actionCache, customerNumber)
+		if resource == nil {
+			return nil, errors.InternalServerError(ServiceName, "enforcePolicy:invalidCustomer")
+		}
+		results = append(results, resource.ToString())
+	}
+
+	return results, nil
 }

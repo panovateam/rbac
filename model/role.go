@@ -39,3 +39,9 @@ func (s AccessRole) String() string {
 		return "Unknown"
 	}
 }
+// Role model
+type Role struct {
+	ID          int        `json:"id"`
+	AccessLevel AccessRole `json:"access_level"`
+	Name        string     `json:"name"`
+}
