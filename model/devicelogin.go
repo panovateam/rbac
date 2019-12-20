@@ -4,7 +4,6 @@ import (
 )
 // Location represents company location model
 type DeviceLogin struct {
-	Base
 	User *User 		 `json:"user,omitempty"`
 	UserID int       `sql:"type:bigint,null" json:"-"`
 	IP  string      `sql:"type:varchar(50),null" json:"-"`
