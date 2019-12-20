@@ -1,10 +1,10 @@
 package model
 
-type Group struct {
-	Name       string    `sql:"type:varchar(150)" json:"name"`
-	Uuid       string    `sql:"type:uuid,notnull" json:"uuid"`
-	CustomerID int       `sql:"type:bigint,notnull" json:"-"`
+type GroupCache struct {
+	Name       string ` json:"name"`
+	Uuid       string ` json:"uuid"`
+	CustomerID int    ` json:"-"`
 
-	Users []string `json:"users,omitempty"` // many to many relation
+	Users    []string `json:"users,omitempty"` // many to many relation
 	Policies []Policy `json:"policies,omitempty"`
 }

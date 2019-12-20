@@ -10,7 +10,7 @@ type User struct {
 	Role       *Role `json:"role,omitempty"`
 	CustomerID int   `json:"-"`
 
-	Groups     []Group  `json:"groups,omitempty"` // many to many relation
-	ResetToken string   `json:"-"`
-	Policies   []Policy `json:"policies,omitempty"`
+	Groups     []GroupCache `json:"groups,omitempty"` // many to many relation
+	ResetToken string       `json:"-"`
+	Policies   []Policy     `json:"policies,omitempty"`
 }

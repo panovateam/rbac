@@ -10,3 +10,20 @@ type AuthUser struct {
 	UserUuid       string     `json:"userUuid,omitempty"`
 	Role           AccessRole `json:"-"`
 }
+
+type AuthToken struct {
+	Token        string `json:"token"`
+	Expires      string `json:"expires"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+// RefreshToken holds authentication token details
+type RefreshToken struct {
+	Token   string `json:"token"`
+	Expires string `json:"expires"`
+}
+
+type ResetToken struct {
+	ResetToken        string `json:"reset_token"`
+	ResetTokenExpires string `json:"reset_token_expires"`
+}
