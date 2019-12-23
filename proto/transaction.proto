@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package transaction;
+
+import "validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+// import "github.com/micro/go-micro/api/proto/api.proto";
+
+service Transaction {
+    rpc BraintreeTransactions (BraintreeTransactionRequest) returns (BraintreeTransactionResponse);
+    rpc GetTransaction (GetRequest) returns (GetResponse);
+}
+
+message BraintreeTransactionRequest {
+    google.protobuf.Timestamp created_at = 1 [(validate.rules).timestamp.required = true];
+    uint64 amount = 2 [(validate.rules).uint64.gt = 0];
+    string currency_code = 3 [(validate.rules).string.len = 3];
+    string transaction_method = 4 [(validate.rules).string.min_len = 0];
+    string user_uuid = 5 [(validate.rules).string.uuid = true];
+    string customer_number = 6 [(validate.rules).string.min_len = 0];
+    uint64 service = 7;
+    string metadata = 8;
+}
+
+message BraintreeTransactionResponse {
+    int64 code = 1;
+}
+
+message GetRequest {
+    string uuid = 1 [(validate.rules).string.uuid = true];
+}
+
+message GetResponse {
+    string data = 1;
+    int64 code = 2;
+}

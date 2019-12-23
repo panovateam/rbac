@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package system.micro.srv.pkg;
+
+import "validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "github.com/micro/go-micro/api/proto/api.proto";
+
+service Pkg {
+    rpc AddPackage (go.api.Request) returns (go.api.Response);
+    rpc ListPackages (go.api.Request) returns (go.api.Response);
+    rpc UpdatePackage (go.api.Request) returns (go.api.Response);
+    rpc DeletePackage (go.api.Request) returns (go.api.Response);
+    rpc GetPackage (go.api.Request) returns (go.api.Response);
+}
+
+service PkgSrv {
+    rpc GetPackageByUUID (GetPackagesRequest) returns (GetPackagesResponse);
+}
+
+message GetPackagesRequest {
+    string uuid = 1 [(validate.rules).string.uuid = true];
+}
+
+message GetPackagesResponse {
+    google.protobuf.Timestamp start_date = 1;
+    google.protobuf.Timestamp end_date = 2;
+    uint64 price = 3;
+    bool active = 4;
+    uint32 type = 5;
+    string customer_number = 6;
+    string meta = 7;
+    bool have_trial_package = 8;
+    uint32 trial_duration = 9;
+    uint32 interval_time = 10;
+    uint32 quota = 11;
+    uint32 duration = 12;
+    string service_name = 13;
+}

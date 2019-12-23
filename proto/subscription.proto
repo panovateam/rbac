@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package subscription;
+
+import "validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+service Subscription {
+    rpc CreateSubscription (CreateSubRequest) returns (CreateSubResponse);
+    rpc GetSubscriptionDetail (GetDetailRequest) returns (GetDetailResponse);
+    rpc GetListSubscription (GetListRequest) returns (GetListResponse);
+}
+
+message CreateSubRequest {
+    string package_uuid = 1 [(validate.rules).string.uuid = true];
+    string customer_number = 2 [(validate.rules).string.min_len = 0];
+    string service = 3 [(validate.rules).string.min_len = 0];
+    uint32 duration = 4 [(validate.rules).uint32.gt = 0];
+}
+
+message CreateSubResponse {
+    int64 code = 1;
+}
+
+message CacheField {
+    string customer_number = 1 [(validate.rules).string.min_len = 0];
+    string service = 2 [(validate.rules).string.len = 3];
+}
+
+message GetDetailRequest {
+    oneof request{
+        option (validate.required) = true;
+        string uuid = 1 [(validate.rules).string.uuid = true];
+        CacheField field = 2;
+    }
+}
+
+message GetDetailResponse {
+    google.protobuf.Timestamp start_date = 1;
+    google.protobuf.Timestamp end_date = 2;
+    string  package_id = 3;
+    uint32  type = 4;
+    string  meta = 5;
+    uint32  duration = 6;
+    uint32  interval_time = 7;
+    uint32  quota = 8;
+    uint64  price = 9;
+    string  customer_number = 10;
+    string  service = 11;
+    uint32  status = 12;
+    bool    have_trial_package = 13;
+    uint32  trial_duration = 14;
+    string  status_name = 15;
+}
+
+message GetListRequest {
+    string customer_number = 1 [(validate.rules).string.min_len = 0];
+}
+
+message ListResponse {
+    google.protobuf.Timestamp start_date = 1;
+    google.protobuf.Timestamp end_date = 2;
+    string  package_id = 3;
+    uint64  price = 4;
+    string  service = 5; 
+    uint32  status = 6;
+    string statusName = 7;
+}
+
+message GetListResponse {
+    repeated ListResponse data = 1;
+}
