@@ -53,7 +53,8 @@ type SubscriptionCache struct {
 	OldPrice         float64                `json:"old_price"`
 	CustomerNumber   string                 `json:"customer_number"`
 	Service          string                 `json:"service"`
-	Status           SubscriptionStatus     `json:"status"`
+	Status           uint8                  `json:"status"`
 	HaveTrialPackage bool                   `json:"have_trial_package"`
 	TrialDuration    uint16                 `json:"trial_duration"`
+	Price            uint64                 `json:"price"`
 }

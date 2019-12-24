@@ -16,10 +16,13 @@ const ActionCacheKey = "2"
 
 // CustomerCacheKey cache key for customer
 const CustomerCacheKey = "3"
+
 // Key cache key for customer
 const Key = "4"
+
 // Algo cache key for customer
 const Algo = "5"
+
 func TestContainer(t *testing.T) {
 	role := 3
 	customerNumber := "customer_number"
@@ -42,13 +45,13 @@ func TestContainer(t *testing.T) {
 				ResourceTypes: []model.ResourceType{
 					{
 						Name:        "things",
-						Effect: "Allow",
+						Effect:      "Allow",
 						ResouceType: "things",
-						Resources:     []string{"*"},
-						Actions:   []string{"iot:listThing",
-						"iot:editThing",
-						"iot:readThing",
-						"iot:controlThing"},
+						Resources:   []string{"*"},
+						Actions: []string{"iot:listThing",
+							"iot:editThing",
+							"iot:readThing",
+							"iot:controlThing"},
 					},
 				},
 			},
@@ -62,21 +65,21 @@ func TestContainer(t *testing.T) {
 	}
 
 	client := redis.NewRedis(&options)
-	client.SetObject("onsky:authen:users", userUUID, userModel)
-	client.SetObject("onsky:authen:actions", action, actionCache)
+	client.SetObject("xxx", userUUID, userModel)
+	client.SetObject("yyy", action, actionCache)
 
-
-	rbac:= Init(client,UserCacheKey,ActionCacheKey,CustomerCacheKey,Key,Algo)
+	rbac := Init(client, UserCacheKey, ActionCacheKey, CustomerCacheKey, Key, Algo)
 
 	testEnforcePolicy(t, rbac, uint8(role), customerNumber, userUUID, action, compareResources...)
 
 }
 func testEnforcePolicy(t *testing.T, rbac *RBAC, role uint8, customerNumber string, userUUID string, action string, compareResources ...string) {
-	resources, err := rbac.EnforcePolicy( role, customerNumber, userUUID, action, compareResources...)
+	resources, err := rbac.EnforcePolicy(role, customerNumber, userUUID, action, compareResources...)
 	if resources == nil || err != nil {
 		t.Fatalf("policy reject: %+v\n", err)
 	}
 }
+
 // Redis configuration
 type Redis struct {
 	Addr     string `yaml:"addr,omitempty"`
