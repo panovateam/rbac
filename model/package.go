@@ -6,6 +6,7 @@ import (
 
 // PackageCache represents package model cache
 type PackageCache struct {
+	ID            int            `json:"id"`
 	UUID             string
 	StartDate        time.Time
 	EndDate          time.Time

@@ -1,6 +1,7 @@
 package model
 
 type GroupCache struct {
+	ID            int            `json:"id"`
 	Name       string ` json:"name"`
 	Uuid       string ` json:"uuid"`
 	CustomerID int    ` json:"-"`

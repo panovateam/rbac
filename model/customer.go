@@ -2,6 +2,7 @@ package model
 
 // Customer
 type Customer struct {
+	ID            int            `json:"id"`
 	AccNumber   string             `sql:"type:bigint, notnull, unique, default: public.account_generator()" json:"accountNumber"`
 	FirstName   string             `sql:"type:varchar(50)" json:"firstName,omitempty"`
 	LastName    string             `sql:"type:varchar(50)" json:"lastName,omitempty"`
