@@ -60,6 +60,7 @@ message CallingRequest {
   ClientConfig clientConfig = 5;
   string customerNumber =6;
   string macAddress =7; //real gateway?
+  bool isObserver = 8;
 }
 
 message Thing {

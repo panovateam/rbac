@@ -33,6 +33,7 @@ const (
 const (
 	Security = iota
 	Safety
+	Basic
 )
 
 // Status type constant
@@ -71,8 +72,10 @@ func (s Mode) String() string {
 		return "Safety"
 	case Security:
 		return "Security"
+	case Basic:
+		return "Basic"
 	default:
-		return "Security"
+		return "Basic"
 	}
 }
 
