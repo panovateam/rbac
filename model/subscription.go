@@ -41,19 +41,20 @@ func (s SubscriptionStatus) String() string {
 
 //SubscriptionCache cache field customer_number+service_name
 type SubscriptionCache struct {
-	UUID             string
-	PackageID        string
-	StartDate        time.Time
-	EndDate          time.Time
-	Type             uint8
-	Meta             map[string]interface{}
-	Duration         uint16
-	IntervalTime     uint16
-	Quota            uint16
-	OldPrice         float64
-	CustomerNumber   string
-	Service          string
-	Status           SubscriptionStatus
-	HaveTrialPackage bool
-	TrialDuration    uint16
+	UUID             string                 `json:"uuid"`
+	PackageID        string                 `json:"package_id"`
+	StartDate        time.Time              `json:"start_date"`
+	EndDate          time.Time              `json:"end_date"`
+	Type             uint8                  `json:"type"`
+	Meta             map[string]interface{} `json:"meta"`
+	Duration         uint16                 `json:"duration"`
+	IntervalTime     uint16                 `json:"interval_time"`
+	Quota            uint16                 `json:"quota"`
+	OldPrice         float64                `json:"old_price"`
+	CustomerNumber   string                 `json:"customer_number"`
+	Service          string                 `json:"service"`
+	Status           uint8                  `json:"status"`
+	HaveTrialPackage bool                   `json:"have_trial_package"`
+	TrialDuration    uint16                 `json:"trial_duration"`
+	Price            uint64                 `json:"price"`
 }
