@@ -20,4 +20,5 @@ type PackageCache struct {
 	IntervalTime     uint16
 	Quota            uint16
 	ServiceName      string
+	Currency         string
 }
