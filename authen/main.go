@@ -87,7 +87,7 @@ func (r *RBAC) UserFromMetadata(ctx context.Context) (*model.AuthUser,error) {
 	if !ok {
 		return nil, errors.Forbidden(ServiceName, "rbac:authen:UserFromMetadata:invalidParams")
 	}
-	token := meta["authorization"]
+	token := meta["Authorization"]
 	if token == "" {
 		return nil, errors.Forbidden(ServiceName, "rbac:authen:UserFromMetadata:missingToken")
 	}
