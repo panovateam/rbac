@@ -21,9 +21,9 @@ func ParseToken(key string, algo string, token string) (*model.AuthUser, error) 
 		if jwt.GetSigningMethod(algo) != token.Method {
 			return nil, errors.Forbidden(ServiceName, "rbac:utl:ParseToken:forbidden")
 		}
-		return key, nil
+		return []byte(key), nil
 	})
-	if err!=nil{
+	if err != nil || !j.Valid{
 		return nil,err
 	}
 	claims := j.Claims.(jwt.MapClaims)
