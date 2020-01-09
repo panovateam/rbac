@@ -18,8 +18,25 @@ type CallStatus string
 // Type of call or message
 type Type int8
 
-// Datatype of a property of thing
+// DataType of a property of thing
 type DataType int8
+
+// StorageType of a property of thing
+type StorageType int8
+
+const (
+	Picture = iota + 1
+	Video
+	Text
+	Others
+)
+
+var StorageTypes = []StorageType{
+	Picture,
+	Video,
+	Text,
+	Others,
+}
 
 const (
 	Number = iota + 1
@@ -34,7 +51,45 @@ const (
 	Schedule
 	HTML
 )
+// Message Type constant
+const (
+	Motion = iota
+	Smoke
+	Co
+	SOS
+	TempHumd
+	DoorLock
+	OSLocus
+)
 
+// Mode Type constant
+const (
+	Security = iota
+	Safety
+	Basic
+)
+
+// Status type constant
+const (
+	Initial = iota
+	Running
+	Done
+	Timeout
+	Canceled
+)
+
+func (s StorageType) String() string {
+	switch s {
+	case Picture:
+		return "Image"
+	case Video:
+		return "Video"
+	case Text:
+		return "Text"
+	default:
+		return "Others"
+	}
+}
 func (s DataType) String() string {
 	switch s {
 	case Number:
@@ -63,6 +118,7 @@ func (s DataType) String() string {
 		return "Unknown"
 	}
 }
+// GetDataTypeList get data
 func GetDataTypeList() []Configure {
 	var result = make([]Configure, 11)
 	for i := 1; i < 12; i++ {
@@ -76,32 +132,6 @@ func GetDataTypeList() []Configure {
 
 	return result
 }
-// Message Type constant
-const (
-	Motion = iota
-	Smoke
-	Co
-	SOS
-	TempHumd
-	DoorLock
-	OSLocus
-)
-
-// Mode Type constant
-const (
-	Security = iota
-	Safety
-	Basic
-)
-
-// Status type constant
-const (
-	Initial = iota
-	Running
-	Done
-	Timeout
-	Canceled
-)
 
 func (s SecurityType) String() string {
 	switch s {
