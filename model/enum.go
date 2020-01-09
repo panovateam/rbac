@@ -59,7 +59,6 @@ func (s SecurityType) String() string {
 		return "TempHumd"
 	case DoorLock:
 		return "DoorLock"
-
 	case OSLocus:
 		return "OS Locus"
 	default:
@@ -135,6 +134,10 @@ func (s NotificationType) String() string {
 		return "SafetyAlarm"
 	case Simple:
 		return "Simple"
+	case OSLocusTemp:
+		return "OSLocusTemp"
+	case OSLocusSOS:
+		return "OSLocusSOS"
 	default:
 		return "Simple"
 	}
