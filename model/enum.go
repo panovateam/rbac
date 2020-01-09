@@ -18,6 +18,64 @@ type CallStatus string
 // Type of call or message
 type Type int8
 
+// Datatype of a property of thing
+type DataType int8
+
+const (
+	Number = iota + 1
+	String
+	Json
+	Image
+	Boolean
+	ThingObject
+	XML
+	DateTime
+	Location
+	Schedule
+	HTML
+)
+
+func (s DataType) String() string {
+	switch s {
+	case Number:
+		return "Number"
+	case String:
+		return "String"
+	case Json:
+		return "Json"
+	case Image:
+		return "Image"
+	case Boolean:
+		return "Boolean"
+	case ThingObject:
+		return "ThingObject"
+	case XML:
+		return "XML"
+	case DateTime:
+		return "DateTime"
+	case Location:
+		return "Location"
+	case Schedule:
+		return "Schedule"
+	case HTML:
+		return "HTML"
+	default:
+		return "Unknown"
+	}
+}
+func GetDataTypeList() []Configure {
+	var result = make([]Configure, 11)
+	for i := 1; i < 12; i++ {
+		id := i
+		dataType := DataType(i)
+		result[i-1] = Configure{
+			&id,
+			dataType.String(),
+		}
+	}
+
+	return result
+}
 // Message Type constant
 const (
 	Motion = iota
