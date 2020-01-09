@@ -268,7 +268,7 @@ func (m *CallingRequest) Validate() error {
 
 	// no validation rules for MacAddress
 
-	// no validation rules for IsObserver
+	// no validation rules for ForceType
 
 	return nil
 }
