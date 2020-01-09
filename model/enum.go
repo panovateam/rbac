@@ -107,6 +107,8 @@ const (
 	SecurityAlarm
 	SafetyAlarm
 	SafetyBreachTempHumd
+	OSLocusTemp
+	OSLocusSOS
 	Complex
 )
 
