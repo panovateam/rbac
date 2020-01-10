@@ -4,6 +4,7 @@ service IotSvc {
 	rpc GetGateway(ThingRequest) returns (ThingResponse) {}
 	rpc GetThing(ThingRequest) returns (ThingResponse) {}
 	rpc ExcuteTemplate(DataRequest) returns (DataResponse) {}
+	rpc Log(DataRequest) returns (DataResponse) {}
 }
 
 message EmptyRequest {

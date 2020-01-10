@@ -37,6 +37,7 @@ type IotSvcService interface {
 	GetGateway(ctx context.Context, in *ThingRequest, opts ...client.CallOption) (*ThingResponse, error)
 	GetThing(ctx context.Context, in *ThingRequest, opts ...client.CallOption) (*ThingResponse, error)
 	ExcuteTemplate(ctx context.Context, in *DataRequest, opts ...client.CallOption) (*DataResponse, error)
+	Log(ctx context.Context, in *DataRequest, opts ...client.CallOption) (*DataResponse, error)
 }
 
 type iotSvcService struct {
@@ -87,12 +88,23 @@ func (c *iotSvcService) ExcuteTemplate(ctx context.Context, in *DataRequest, opt
 	return out, nil
 }
 
+func (c *iotSvcService) Log(ctx context.Context, in *DataRequest, opts ...client.CallOption) (*DataResponse, error) {
+	req := c.c.NewRequest(c.name, "IotSvc.Log", in)
+	out := new(DataResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for IotSvc service
 
 type IotSvcHandler interface {
 	GetGateway(context.Context, *ThingRequest, *ThingResponse) error
 	GetThing(context.Context, *ThingRequest, *ThingResponse) error
 	ExcuteTemplate(context.Context, *DataRequest, *DataResponse) error
+	Log(context.Context, *DataRequest, *DataResponse) error
 }
 
 func RegisterIotSvcHandler(s server.Server, hdlr IotSvcHandler, opts ...server.HandlerOption) error {
@@ -100,6 +112,7 @@ func RegisterIotSvcHandler(s server.Server, hdlr IotSvcHandler, opts ...server.H
 		GetGateway(ctx context.Context, in *ThingRequest, out *ThingResponse) error
 		GetThing(ctx context.Context, in *ThingRequest, out *ThingResponse) error
 		ExcuteTemplate(ctx context.Context, in *DataRequest, out *DataResponse) error
+		Log(ctx context.Context, in *DataRequest, out *DataResponse) error
 	}
 	type IotSvc struct {
 		iotSvc
@@ -122,4 +135,8 @@ func (h *iotSvcHandler) GetThing(ctx context.Context, in *ThingRequest, out *Thi
 
 func (h *iotSvcHandler) ExcuteTemplate(ctx context.Context, in *DataRequest, out *DataResponse) error {
 	return h.IotSvcHandler.ExcuteTemplate(ctx, in, out)
+}
+
+func (h *iotSvcHandler) Log(ctx context.Context, in *DataRequest, out *DataResponse) error {
+	return h.IotSvcHandler.Log(ctx, in, out)
 }
