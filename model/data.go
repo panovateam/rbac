@@ -59,6 +59,7 @@ type AlerDataModel struct {
 }
 
 type Trigger struct {
+	Namespace    string `json:"namespace,omitempty"`
 	Micro    string `json:"micro,omitempty"`
 	Endpoint string `json:"endpoint,omitempty"`
 	Body     string `json:"body,omitempty"`
