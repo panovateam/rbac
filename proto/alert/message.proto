@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+
+service AlertSrv {
+  rpc CheckAlert(AlertRequest) returns (AlertResponse) {}
+  rpc GetAlertTypes(AlertTypeRequest) returns (AlertTypeResponse) {}
+}
+
+message AlertRequest {
+  string type = 1;
+  string compareValue = 2;
+  string value = 3;
+}
+
+message AlertResponse {
+  bool result = 1;
+}
+//--
+message AlertTypeRequest {
+
+}
+message AlertTypeResponse {
+  repeated AlertType items = 1;
+}
+//--
+message AlertType {
+    int32 id = 1;
+    string name = 2;
+}
