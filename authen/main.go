@@ -1,15 +1,16 @@
 package authen
 
 import (
+	"context"
 	"encoding/json"
+
 	"github.com/labstack/echo"
+	"github.com/micro/go-micro/metadata"
 	"github.com/onskycloud/errors"
 	"github.com/onskycloud/go-redis"
 	"github.com/onskycloud/rbac/model"
 	"github.com/onskycloud/rbac/utl"
 	resourcehelper "github.com/onskycloud/resource-helper"
-	"github.com/micro/go-micro/metadata"
-	"context"
 )
 
 // ServiceName Seperate Char
@@ -21,24 +22,40 @@ const ResourceAll = "*"
 // ResourceList resource key
 const ResourceList = "List"
 
+// CallbackType type of callback func
+type CallbackType uint8
+
+const (
+	//CUSTOMER callbacktype is customer
+	CUSTOMER = iota + 1
+	//POLICY callbacktype is policy
+	POLICY
+)
+
+// Callback func
+type Callback func(CallbackType, map[string]string) error
+
 // RBAC model representation
 type RBAC struct {
-	DB *redis.Redis
-	UserCacheKey string
-	ActionCacheKey string
+	DB               *redis.Redis
+	UserCacheKey     string
+	ActionCacheKey   string
 	CustomerCacheKey string
-	Key string
-	Algo string
+	Key              string
+	Algo             string
+	Callback         Callback
 }
+
 // Init init redis receiver
-func Init(db *redis.Redis,userCacheKey string,actionCacheKey string, customerCacheKey string, key string, algo string) *RBAC {
+func Init(db *redis.Redis, userCacheKey string, actionCacheKey string, customerCacheKey string, key string, algo string, callback Callback) *RBAC {
 	return &RBAC{
-		DB:db,
-		UserCacheKey:userCacheKey,
-		ActionCacheKey: actionCacheKey,
-		CustomerCacheKey:customerCacheKey,
-		Key:key,
-		Algo:algo,
+		DB:               db,
+		UserCacheKey:     userCacheKey,
+		ActionCacheKey:   actionCacheKey,
+		CustomerCacheKey: customerCacheKey,
+		Key:              key,
+		Algo:             algo,
+		Callback:         callback,
 	}
 }
 
@@ -68,7 +85,7 @@ func (r *RBAC) UserFromContext(c echo.Context) *model.AuthUser {
 		return &result
 	}
 
-	err = getDataFromCache(r.DB, r.CustomerCacheKey, customerNumber, customer)
+	err = r.GetDataFromCache(r.CustomerCacheKey, customerNumber, customer)
 	if err != nil || customer == nil || customer.Clients == nil {
 		return &result
 	}
@@ -79,8 +96,9 @@ func (r *RBAC) UserFromContext(c echo.Context) *model.AuthUser {
 
 	return &result
 }
+
 // UserFromMetadata instance
-func (r *RBAC) UserFromMetadata(ctx context.Context) (*model.AuthUser,error) {
+func (r *RBAC) UserFromMetadata(ctx context.Context) (*model.AuthUser, error) {
 	customer := new(model.Customer)
 
 	meta, ok := metadata.FromContext(ctx)
@@ -91,27 +109,28 @@ func (r *RBAC) UserFromMetadata(ctx context.Context) (*model.AuthUser,error) {
 	if token == "" {
 		return nil, errors.Forbidden(ServiceName, "rbac:authen:UserFromMetadata:missingToken")
 	}
-	result,err:= utl.ParseToken(r.Key,r.Algo,token)
-	if err!=nil{
-		return nil,err
+	result, err := utl.ParseToken(r.Key, r.Algo, token)
+	if err != nil {
+		return nil, err
 	}
 
 	err = enforceRole(uint8(result.Role), model.CustomerUserRole)
 	if err != nil {
-		return result,nil
+		return result, nil
 	}
 
-	err = getDataFromCache(r.DB, r.CustomerCacheKey, result.CustomerNumber, customer)
+	err = r.GetDataFromCache(r.CustomerCacheKey, result.CustomerNumber, customer)
 	if err != nil || customer == nil || customer.Clients == nil {
-		return result,nil
+		return result, nil
 	}
 
 	for i := 0; i < len(customer.Clients); i++ {
 		result.Clients = append(result.Clients, customer.Clients[i].AccNumber)
 	}
 
-	return result,nil
+	return result, nil
 }
+
 // EnforcePolicy only have permission when meet requirement policy and resouce
 // params:
 // - serviceName string
@@ -130,7 +149,7 @@ func (r *RBAC) EnforcePolicy(role uint8, customerNumber string, userUUID string,
 		return nil, errors.Forbidden(ServiceName, "enforcePolicy:invalidParams")
 	}
 
-	err := getDataFromCache(r.DB, r.ActionCacheKey, action, actionCache)
+	err := r.GetDataFromCache(r.ActionCacheKey, action, actionCache)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +171,7 @@ func (r *RBAC) EnforcePolicy(role uint8, customerNumber string, userUUID string,
 		compareResources = []string{ResourceAll}
 	}
 	//-------------get policies of user-------------
-	err = getDataFromCache(r.DB, r.UserCacheKey, userUUID, user)
+	err = r.GetDataFromCache(r.UserCacheKey, userUUID, user)
 	if err != nil {
 		return nil, err
 	}
@@ -252,14 +271,25 @@ func getResources(compareResources []string, assignedResources []string, actionC
 	return result
 }
 
-func getDataFromCache(db *redis.Redis, key string, field string, result interface{}) error {
+// GetDataFromCache get data from cache
+func (r *RBAC) GetDataFromCache(key string, field string, result interface{}) error {
 	var temp interface{}
-	err := db.GetObject(key, field, &temp)
-	if err != nil {
+	err := r.DB.GetObject(key, field, &temp)
+	if err.Error() == errors.RedisEmpty {
+		//  update cache by callback
+		input := map[string]string{
+			"userUUID": key,
+		}
+		err = r.Callback(POLICY, input)
+		if err != nil {
+			return err
+		}
+		err = r.DB.GetObject(key, field, &temp)
 		if err.Error() == errors.RedisEmpty {
-			// TODO: update cache by get from db
 			return errors.NotFound(ServiceName, "enforcePolicy:notFound")
 		}
+	}
+	if err != nil {
 		return err
 	}
 	b, err := json.Marshal(temp)
