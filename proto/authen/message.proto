@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+service AuthenSvc {
+	rpc GetCustomer(CustomerRequest) returns (CustomerResponse) {}
+	rpc GetCustomerByEmail(CustomerByUserNameRequest) returns (CustomerResponse) {}
+	rpc VerifyPermission(VerifyPermissionRequest) returns (VerifyPermissionResponse) {}
+}
+message EmptyRequest {
+}
+message CustomerRequest {
+	string customerNumber = 1;
+}
+message CustomerByUserNameRequest{
+	string userName = 1;
+}
+message CustomerResponse {
+	string customerNumber = 1;
+	string alias = 2;
+	string mobile = 3;
+	string firstName = 4;
+	string lastName = 5;
+	string address1 = 6;
+	string address2 = 7;
+	string email = 8;
+	CustomerSetting setting = 9;
+}
+
+message CustomerSetting {
+	int32 id =1;
+	bool isAllowRegister=2;
+	SMTPConfig smtp =3;
+	PaymentConfig payment=4;
+	string other =5;
+}
+message SMTPConfig{
+	string host =1;
+	int32 port =2;
+	string password =3;
+	string account =4;
+}
+message PaymentConfig {
+
+}
+message VerifyPermissionRequest{
+	string action = 1;
+	repeated string compareResources = 2;
+}
+message VerifyPermissionResponse{
+	repeated string resources = 1;
+	bool success = 2;
+	AuthUser authUser = 3;
+}
+message AuthUser {
+	int32 id =1;
+	int32 customerID =2;
+	string customerNumber = 3;
+	repeated string clients = 4;
+	string username = 5;
+	string userUuid=6;
+}
