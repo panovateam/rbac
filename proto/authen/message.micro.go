@@ -37,7 +37,6 @@ type AuthenSvcService interface {
 	GetCustomer(ctx context.Context, in *CustomerRequest, opts ...client.CallOption) (*CustomerResponse, error)
 	GetCustomerByEmail(ctx context.Context, in *CustomerByUserNameRequest, opts ...client.CallOption) (*CustomerResponse, error)
 	VerifyPermission(ctx context.Context, in *VerifyPermissionRequest, opts ...client.CallOption) (*VerifyPermissionResponse, error)
-	VerifyPermissionFromContext(ctx context.Context, in *VerifyPermissionRequest, opts ...client.CallOption) (*VerifyPermissionResponse, error)
 }
 
 type authenSvcService struct {
@@ -88,23 +87,12 @@ func (c *authenSvcService) VerifyPermission(ctx context.Context, in *VerifyPermi
 	return out, nil
 }
 
-func (c *authenSvcService) VerifyPermissionFromContext(ctx context.Context, in *VerifyPermissionRequest, opts ...client.CallOption) (*VerifyPermissionResponse, error) {
-	req := c.c.NewRequest(c.name, "AuthenSvc.VerifyPermissionFromContext", in)
-	out := new(VerifyPermissionResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // Server API for AuthenSvc service
 
 type AuthenSvcHandler interface {
 	GetCustomer(context.Context, *CustomerRequest, *CustomerResponse) error
 	GetCustomerByEmail(context.Context, *CustomerByUserNameRequest, *CustomerResponse) error
 	VerifyPermission(context.Context, *VerifyPermissionRequest, *VerifyPermissionResponse) error
-	VerifyPermissionFromContext(context.Context, *VerifyPermissionRequest, *VerifyPermissionResponse) error
 }
 
 func RegisterAuthenSvcHandler(s server.Server, hdlr AuthenSvcHandler, opts ...server.HandlerOption) error {
@@ -112,7 +100,6 @@ func RegisterAuthenSvcHandler(s server.Server, hdlr AuthenSvcHandler, opts ...se
 		GetCustomer(ctx context.Context, in *CustomerRequest, out *CustomerResponse) error
 		GetCustomerByEmail(ctx context.Context, in *CustomerByUserNameRequest, out *CustomerResponse) error
 		VerifyPermission(ctx context.Context, in *VerifyPermissionRequest, out *VerifyPermissionResponse) error
-		VerifyPermissionFromContext(ctx context.Context, in *VerifyPermissionRequest, out *VerifyPermissionResponse) error
 	}
 	type AuthenSvc struct {
 		authenSvc
@@ -135,8 +122,4 @@ func (h *authenSvcHandler) GetCustomerByEmail(ctx context.Context, in *CustomerB
 
 func (h *authenSvcHandler) VerifyPermission(ctx context.Context, in *VerifyPermissionRequest, out *VerifyPermissionResponse) error {
 	return h.AuthenSvcHandler.VerifyPermission(ctx, in, out)
-}
-
-func (h *authenSvcHandler) VerifyPermissionFromContext(ctx context.Context, in *VerifyPermissionRequest, out *VerifyPermissionResponse) error {
-	return h.AuthenSvcHandler.VerifyPermissionFromContext(ctx, in, out)
 }
