@@ -290,18 +290,20 @@ func getResources(compareResources []string, assignedResources []string, actionC
 func (r *RBAC) GetDataFromCache(key string, field string, result interface{}) error {
 	var temp interface{}
 	err := r.DB.GetObject(key, field, &temp)
-	if err.Error() == errors.RedisEmpty {
-		//  update cache by callback
-		input := map[string]string{
-			"userUUID": key,
-		}
-		err = r.Callback(POLICY, input)
-		if err != nil {
-			return err
-		}
-		err = r.DB.GetObject(key, field, &temp)
+	if err != nil {
 		if err.Error() == errors.RedisEmpty {
-			return errors.NotFound(ServiceName, "enforcePolicy:notFound")
+			//  update cache by callback
+			input := map[string]string{
+				"userUUID": key,
+			}
+			err = r.Callback(POLICY, input)
+			if err != nil {
+				return err
+			}
+			err = r.DB.GetObject(key, field, &temp)
+			if err.Error() == errors.RedisEmpty {
+				return errors.NotFound(ServiceName, "enforcePolicy:notFound")
+			}
 		}
 	}
 	if err != nil {
