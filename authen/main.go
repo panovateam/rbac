@@ -113,7 +113,7 @@ func (r *RBAC) UserFromMetadata(ctx context.Context) (*model.AuthUser, error) {
 
 	meta, ok := metadata.FromContext(ctx)
 	if !ok {
-		return nil, errors.Forbidden(ServiceName, "rbac:authen:UserFromMetadata:invalidParams")
+		return nil, errors.Forbidden(ServiceName, "rbac:authen:UserFromMetadata:invalidParams:meta:%+v\n", meta)
 	}
 
 	token, ok := meta["authorization"]
@@ -122,7 +122,7 @@ func (r *RBAC) UserFromMetadata(ctx context.Context) (*model.AuthUser, error) {
 		token, ok = meta["Authorization"]
 	}
 	if !ok {
-		return nil, errors.Forbidden(ServiceName, "rbac:authen:UserFromMetadata:missingToken")
+		return nil, errors.Forbidden(ServiceName, "rbac:authen:UserFromMetadata:missingToken:meta:%+v\n", meta)
 	}
 	result, err := utl.ParseToken(r.Key, r.Algo, token)
 	if err != nil {
@@ -161,7 +161,7 @@ func (r *RBAC) EnforcePolicy(role uint8, customerNumber string, userUUID string,
 	actionCache := &resourcehelper.ItemActionCache{}
 
 	if action == "" || r == nil || role == 0 || customerNumber == "" || userUUID == "" {
-		return nil, errors.Forbidden(ServiceName, "enforcePolicy:invalidParams")
+		return nil, errors.Forbidden(ServiceName, "enforcePolicy:invalidParams:action:%+v:role:%+v:cn:%+v:useruuid:%+v\n", action, role, customerNumber, userUUID)
 	}
 
 	err := r.GetDataFromCache(r.ActionCacheKey, action, actionCache)
@@ -199,7 +199,7 @@ func (r *RBAC) EnforcePolicy(role uint8, customerNumber string, userUUID string,
 
 	result := getResources(compareResources, assignedResources, actionCache, customerNumber)
 	if result == nil || len(result) == 0 {
-		return nil, errors.Forbidden(ServiceName, "enforcePolicy:restricted")
+		return nil, errors.Forbidden(ServiceName, "enforcePolicy:restricted:compareResources:%+v - assignedResources:%+v - actionCache:%+v - cn:%+v\n", compareResources, assignedResources, actionCache, customerNumber)
 	}
 	return result, nil
 }
@@ -209,7 +209,7 @@ func enforceRole(role uint8, roleBase model.AccessRole) error {
 	if role <= uint8(roleBase) {
 		return nil
 	}
-	return errors.Forbidden(ServiceName, "enforcePolicy:forbidden")
+	return errors.Forbidden(ServiceName, "enforcePolicy:forbidden:role:%+v - base:%+v\n", role, roleBase)
 }
 func getAssignedResources(action string, actionCache *resourcehelper.ItemActionCache, customerNumber string, policies []model.Policy) []string {
 	result := []string{}
@@ -264,7 +264,7 @@ func checkInvalidResource(compareResources []string, actionCache *resourcehelper
 	for i := 0; i < len(compareResources); i++ {
 		result := resourcehelper.GetResourceFormat(compareResources[i], actionCache, customerNumber)
 		if result == nil {
-			return errors.Forbidden(ServiceName, "enforcePolicy:invalidResource")
+			return errors.Forbidden(ServiceName, "enforcePolicy:invalidResource:compareResources:%+v - actionCache:%+v - cn:%+v\n", compareResources[i], actionCache, customerNumber)
 		}
 	}
 	return nil
@@ -302,7 +302,7 @@ func (r *RBAC) GetDataFromCache(key string, field string, result interface{}) er
 			}
 			err = r.DB.GetObject(key, field, &temp)
 			if err.Error() == errors.RedisEmpty {
-				return errors.NotFound(ServiceName, "enforcePolicy:notFound")
+				return errors.NotFound(ServiceName, "enforcePolicy:notFound:id:%+v\n", field)
 			}
 		}
 	}
@@ -311,7 +311,7 @@ func (r *RBAC) GetDataFromCache(key string, field string, result interface{}) er
 	}
 	b, err := json.Marshal(temp)
 	if err != nil {
-		return errors.InternalServerError(ServiceName, "enforcePolicy:marshalProblem")
+		return errors.InternalServerError(ServiceName, "enforcePolicy:marshalProblem:%+v\n", temp)
 	}
 	json.Unmarshal(b, result)
 
@@ -330,7 +330,7 @@ func checkAdmin(role uint8, compareResources []string, actionCache *resourcehelp
 	for i := 0; i < len(compareResources); i++ {
 		resource := resourcehelper.GetResourceFormat(compareResources[i], actionCache, customerNumber)
 		if resource == nil {
-			return nil, errors.InternalServerError(ServiceName, "enforcePolicy:invalidCustomer")
+			return nil, errors.InternalServerError(ServiceName, "enforcePolicy:invalidCustomer:%+v - %+v - %+v\n", compareResources[i], actionCache, customerNumber)
 		}
 		results = append(results, resource.ToString())
 	}
