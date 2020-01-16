@@ -326,6 +326,9 @@ func (r *RBAC) GetDataFromCache(mode CallbackType, key string, field string, res
 			}
 		}
 		err = r.DB.GetObject(key, field, &temp)
+		if err.Error() == errors.RedisEmpty {
+			return errors.NotFound(ServiceName, "enforcePolicy:policy:empty:%s\n", field)
+		}
 		break
 	default:
 		break
