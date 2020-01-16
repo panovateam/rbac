@@ -4,7 +4,7 @@ service AuthenSvc {
 	rpc GetCustomer(CustomerRequest) returns (CustomerResponse) {}
 	rpc GetCustomerByEmail(CustomerByUserNameRequest) returns (CustomerResponse) {}
 	rpc VerifyPermission(VerifyPermissionRequest) returns (VerifyPermissionResponse) {}
-	rpc VerifyPermissionFromContext(VerifyPermissionRequest) returns (VerifyPermissionResponse) {}
+	//rpc VerifyPermissionFromContext(VerifyPermissionRequest) returns (VerifyPermissionResponse) {}
 }
 message EmptyRequest {
 }
