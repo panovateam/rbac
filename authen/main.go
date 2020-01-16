@@ -44,6 +44,7 @@ type RBAC struct {
 	Key              string
 	Algo             string
 	Callback         Callback
+	Cfg 	map[string]string
 }
 
 // Init init redis receiver
