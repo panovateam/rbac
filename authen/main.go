@@ -2,8 +2,8 @@ package authen
 
 import (
 	"context"
-	"fmt"
 	"encoding/json"
+	"fmt"
 
 	"github.com/labstack/echo"
 	"github.com/micro/go-micro/metadata"
@@ -302,9 +302,9 @@ func (r *RBAC) GetDataFromCache(key string, field string, result interface{}) er
 		if err.Error() == errors.RedisEmpty {
 			//  update cache by callback
 			input := map[string]string{
-				"userUUID": key,
+				"user_uuid": field,
 			}
-			fmt.Printf("callback func: %+v\n",input)
+			fmt.Printf("callback func: %+v\n", input)
 			err = r.Callback(POLICY, input)
 			if err != nil {
 				return err
