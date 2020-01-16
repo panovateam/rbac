@@ -2,6 +2,7 @@ package authen
 
 import (
 	"context"
+	"fmt"
 	"encoding/json"
 
 	"github.com/labstack/echo"
@@ -190,8 +191,15 @@ func (r *RBAC) EnforcePolicy(role uint8, customerNumber string, userUUID string,
 	if err != nil {
 		return nil, err
 	}
+	if user.Policies == nil || len(user.Policies) == 0 {
+		return nil, errors.Forbidden(ServiceName, "enforcePolicy:policy:empty:action:%+v - actionCache:%+v - customerNumber:%+v - user:%+v\n", action, actionCache, customerNumber, user)
+	}
 
 	assignedResources := getAssignedResources(action, actionCache, customerNumber, user.Policies)
+	if len(assignedResources) == 0 {
+		return nil, errors.Forbidden(ServiceName, "enforcePolicy:assignedResources:empty:action:%+v - actionCache:%+v - customerNumber:%+v - policies:%+v\n", action, actionCache, customerNumber, user.Policies)
+	}
+
 	err = checkInvalidResource(compareResources, actionCache, customerNumber)
 	if err != nil {
 		return nil, err
@@ -296,6 +304,7 @@ func (r *RBAC) GetDataFromCache(key string, field string, result interface{}) er
 			input := map[string]string{
 				"userUUID": key,
 			}
+			fmt.Printf("callback func: %+v\n",input)
 			err = r.Callback(POLICY, input)
 			if err != nil {
 				return err
