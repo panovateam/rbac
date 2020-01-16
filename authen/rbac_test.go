@@ -30,7 +30,7 @@ func TestContainer(t *testing.T) {
 	action := "iot:editThing"
 	compareResources := []string{"*"}
 	options := Redis{
-		Addr: "192.168.0.52:30333",
+		Addr: "192.168.0.53:6379",
 	}
 	userModel := model.User{
 		Uuid: "user_id",
@@ -68,7 +68,7 @@ func TestContainer(t *testing.T) {
 	client.SetObject("xxx", userUUID, userModel)
 	client.SetObject("yyy", action, actionCache)
 
-	rbac := Init(client, UserCacheKey, ActionCacheKey, CustomerCacheKey, Key, Algo)
+	rbac := Init(client, UserCacheKey, ActionCacheKey, CustomerCacheKey, Key, Algo, nil)
 
 	testEnforcePolicy(t, rbac, uint8(role), customerNumber, userUUID, action, compareResources...)
 

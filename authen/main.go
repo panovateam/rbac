@@ -26,8 +26,10 @@ const ResourceList = "List"
 type CallbackType uint8
 
 const (
+	//DEFAULT callbacktype is default
+	DEFAULT = iota
 	//CUSTOMER callbacktype is customer
-	CUSTOMER = iota + 1
+	CUSTOMER
 	//POLICY callbacktype is policy
 	POLICY
 )
@@ -47,8 +49,15 @@ type RBAC struct {
 	Cfg              map[string]string
 }
 
+func emptyCallback(callbackType CallbackType, cfg map[string]string) error {
+	return errors.BadRequest(ServiceName, "rbac:emptyCallback:%+v\n", cfg)
+}
+
 // Init init redis receiver
 func Init(db *redis.Redis, userCacheKey string, actionCacheKey string, customerCacheKey string, key string, algo string, callback Callback) *RBAC {
+	if callback == nil {
+		callback = emptyCallback
+	}
 	return &RBAC{
 		DB:               db,
 		UserCacheKey:     userCacheKey,
