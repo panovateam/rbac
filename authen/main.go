@@ -44,7 +44,7 @@ type RBAC struct {
 	Key              string
 	Algo             string
 	Callback         Callback
-	Cfg 	map[string]string
+	Cfg              map[string]string
 }
 
 // Init init redis receiver
@@ -106,8 +106,13 @@ func (r *RBAC) UserFromMetadata(ctx context.Context) (*model.AuthUser, error) {
 	if !ok {
 		return nil, errors.Forbidden(ServiceName, "rbac:authen:UserFromMetadata:invalidParams")
 	}
-	token := meta["Authorization"]
-	if token == "" {
+
+	token, ok := meta["authorization"]
+	// support UPERCASE for rpc
+	if !ok {
+		token, ok = meta["Authorization"]
+	}
+	if !ok {
 		return nil, errors.Forbidden(ServiceName, "rbac:authen:UserFromMetadata:missingToken")
 	}
 	result, err := utl.ParseToken(r.Key, r.Algo, token)
