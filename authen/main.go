@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/micro/go-micro/metadata"
+	"github.com/mitchellh/mapstructure"
 	"github.com/onskycloud/errors"
 	"github.com/onskycloud/go-redis"
 	"github.com/onskycloud/rbac/model"
@@ -36,7 +37,7 @@ const (
 )
 
 // Callback func
-type Callback func(CallbackType, map[string]string) error
+type Callback func(CallbackType, map[string]string) (interface{}, error)
 
 // RBAC model representation
 type RBAC struct {
@@ -50,8 +51,8 @@ type RBAC struct {
 	Cfg              map[string]string
 }
 
-func emptyCallback(callbackType CallbackType, cfg map[string]string) error {
-	return errors.BadRequest(ServiceName, "rbac:emptyCallback:%+v\n", cfg)
+func emptyCallback(callbackType CallbackType, cfg map[string]string) (interface{}, error) {
+	return nil, errors.BadRequest(ServiceName, "rbac:emptyCallback:%+v\n", cfg)
 }
 
 // Init init redis receiver
@@ -96,7 +97,7 @@ func (r *RBAC) UserFromContext(c echo.Context) *model.AuthUser {
 		return &result
 	}
 
-	err = r.GetDataFromCache(r.CustomerCacheKey, customerNumber, customer)
+	err = r.GetDataFromCache(DEFAULT, r.CustomerCacheKey, customerNumber, customer)
 	if err != nil || customer == nil || customer.Clients == nil {
 		return &result
 	}
@@ -135,7 +136,7 @@ func (r *RBAC) UserFromMetadata(ctx context.Context) (*model.AuthUser, error) {
 		return result, nil
 	}
 
-	err = r.GetDataFromCache(r.CustomerCacheKey, result.CustomerNumber, customer)
+	err = r.GetDataFromCache(DEFAULT, r.CustomerCacheKey, result.CustomerNumber, customer)
 	if err != nil || customer == nil || customer.Clients == nil {
 		return result, nil
 	}
@@ -165,7 +166,7 @@ func (r *RBAC) EnforcePolicy(role uint8, customerNumber string, userUUID string,
 		return nil, errors.Forbidden(ServiceName, "enforcePolicy:invalidParams:action:%+v:role:%+v:cn:%+v:useruuid:%+v\n", action, role, customerNumber, userUUID)
 	}
 
-	err := r.GetDataFromCache(r.ActionCacheKey, action, actionCache)
+	err := r.GetDataFromCache(DEFAULT, r.ActionCacheKey, action, actionCache)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +188,7 @@ func (r *RBAC) EnforcePolicy(role uint8, customerNumber string, userUUID string,
 		compareResources = []string{ResourceAll}
 	}
 	//-------------get policies of user-------------
-	err = r.GetDataFromCache(r.UserCacheKey, userUUID, user)
+	err = r.GetDataFromCache(POLICY, r.UserCacheKey, userUUID, user)
 	if err != nil {
 		return nil, err
 	}
@@ -295,25 +296,39 @@ func getResources(compareResources []string, assignedResources []string, actionC
 }
 
 // GetDataFromCache get data from cache
-func (r *RBAC) GetDataFromCache(key string, field string, result interface{}) error {
+func (r *RBAC) GetDataFromCache(mode CallbackType, key string, field string, result interface{}) error {
 	var temp interface{}
 	err := r.DB.GetObject(key, field, &temp)
-	if err != nil {
-		if err.Error() == errors.RedisEmpty {
-			//  update cache by callback
-			input := map[string]string{
-				"user_uuid": field,
-			}
-			fmt.Printf("callback func: %+v\n", input)
-			err = r.Callback(POLICY, input)
-			if err != nil {
-				return err
-			}
-			err = r.DB.GetObject(key, field, &temp)
-			if err.Error() == errors.RedisEmpty {
-				return errors.NotFound(ServiceName, "enforcePolicy:notFound:id:%+v\n", field)
+	if err == nil {
+		b, err := json.Marshal(temp)
+		if err != nil {
+			return errors.InternalServerError(ServiceName, "enforcePolicy:marshalProblem:%+v\n", temp)
+		}
+		json.Unmarshal(b, result)
+
+		if result == nil {
+			return errors.InternalServerError(ServiceName, "enforcePolicy:wrongData")
+		}
+		return nil
+	}
+	//  update cache by callback
+	switch mode {
+	case POLICY:
+		result := model.User{}
+		input := map[string]string{
+			"user_uuid": field,
+		}
+		fmt.Printf("callback func: %+v\n", input)
+		res, err := r.Callback(POLICY, input)
+		if err == nil && res != nil {
+			if err = mapstructure.Decode(&res, &result.Policies); err == nil {
+				return nil
 			}
 		}
+		err = r.DB.GetObject(key, field, &temp)
+		break
+	default:
+		break
 	}
 	if err != nil {
 		return err
