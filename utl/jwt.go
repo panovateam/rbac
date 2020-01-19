@@ -1,41 +1,46 @@
 package utl
 
 import (
+	"fmt"
+	"strings"
+
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/onskycloud/errors"
 	"github.com/onskycloud/rbac/model"
-	"strings"
 )
 
 // ServiceName Seperate Char
 const ServiceName = "rbac"
+
 // Struct to parse claim
 type jwtUser struct {
-	ID             int        `json:"id,omitempty"`
-	CustomerID     int        `json:"c,omitempty"`
-	CustomerNumber string     `json:"c_n,omitempty"`
-	Username       string     `json:"u,omitempty"`
-	UserUUID       string     `json:"u_uid,omitempty"`
-	Role           int8 `json:"r,omitempty"`
+	ID             int    `json:"id,omitempty"`
+	CustomerID     int    `json:"c,omitempty"`
+	CustomerNumber string `json:"c_n,omitempty"`
+	Username       string `json:"u,omitempty"`
+	UserUUID       string `json:"u_uid,omitempty"`
+	Role           int8   `json:"r,omitempty"`
 	jwt.StandardClaims
 }
+
 // ParseToken parses token from Authorization header
 func ParseToken(key string, algo string, token string) (*model.AuthUser, error) {
 
 	parts := strings.SplitN(token, " ", 2)
 	if !(len(parts) == 2 && parts[0] == "Bearer") {
-		return nil, errors.BadRequest(ServiceName, "rbac:utl:ParseToken:invalid")
+		return nil, errors.BadRequest(ServiceName, "rbac:utl:ParseToken:invalid:%s", token)
 	}
-	j,err := jwt.ParseWithClaims(parts[1], &jwtUser{},func(token *jwt.Token) (interface{}, error) {
+	fmt.Printf("rbac:utl:ParseToken:debug:token:%s\n", parts[1])
+	j, err := jwt.ParseWithClaims(parts[1], &jwtUser{}, func(token *jwt.Token) (interface{}, error) {
 		if jwt.GetSigningMethod(algo) != token.Method {
-			return nil, errors.Forbidden(ServiceName, "rbac:utl:ParseToken:forbidden")
+			return nil, errors.Forbidden(ServiceName, "rbac:utl:ParseToken:forbidden:%s", parts[1])
 		}
 		return []byte(key), nil
 	})
-	if err != nil || !j.Valid{
-		return nil,err
+	if err != nil || !j.Valid {
+		return nil, err
 	}
-	if claims, ok := j.Claims.(*jwtUser);ok {
+	if claims, ok := j.Claims.(*jwtUser); ok {
 		return &model.AuthUser{
 			ID:             claims.ID,
 			Username:       claims.Username,
