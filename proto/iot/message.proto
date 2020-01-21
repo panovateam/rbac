@@ -1,12 +1,17 @@
 syntax = "proto3";
 
+import "github.com/micro/go-micro/api/proto/api.proto";
+
 service IotSvc {
 	rpc GetGateway(ThingRequest) returns (ThingResponse) {}
 	rpc GetThing(ThingRequest) returns (ThingResponse) {}
 	rpc ExcuteTemplate(DataRequest) returns (DataResponse) {}
 	rpc Log(DataRequest) returns (DataResponse) {}
 }
-
+service Iot {
+    rpc HistoryBySerial (go.api.Request) returns (go.api.Response);
+    rpc HistoryByCustomer (go.api.Request) returns (go.api.Response);
+}
 message EmptyRequest {
 }
 
