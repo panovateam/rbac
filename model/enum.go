@@ -51,6 +51,7 @@ const (
 	Schedule
 	HTML
 )
+
 // Message Type constant
 const (
 	Motion = iota
@@ -76,6 +77,23 @@ const (
 	Done
 	Timeout
 	Canceled
+)
+
+// Message key
+const (
+	MotionDetect                = "motion_detect"
+	DoorOpen                    = "door_open"
+	DoorClose                   = "door_close"
+	SecurityBreachMessage       = "security_breach"
+	SafetyBreachMessageCO       = "safety_breach_co"
+	SafetyBreachMessageSOS      = "safety_breach_sos"
+	SafetyBreachMessageSmoke    = "safety_breach_smoke"
+	SecurityAlarmOff            = "security_alarm_off"
+	SecurityAlarmHome           = "security_alarm_home"
+	SecurityAlarmAway           = "security_alarm_away"
+	SafetyAlarmEnable           = "safety_alarm_enable"
+	SafetyAlarmDisable          = "safety_alarm_disable"
+	SafetyBreachMessageTempHumd = "safety_breach_temp_humd"
 )
 
 func (s StorageType) String() string {
@@ -118,6 +136,7 @@ func (s DataType) String() string {
 		return "Unknown"
 	}
 }
+
 // GetDataTypeList get data
 func GetDataTypeList() []Configure {
 	var result = make([]Configure, 11)
