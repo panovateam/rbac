@@ -79,6 +79,12 @@ const (
 	Canceled
 )
 
+// TemplateType type constant
+type TemplateType int8
+
+// MessageKey type constant
+type MessageKey string
+
 // Message key
 const (
 	MotionDetect                = "motion_detect"
@@ -95,6 +101,100 @@ const (
 	SafetyAlarmDisable          = "safety_alarm_disable"
 	SafetyBreachMessageTempHumd = "safety_breach_temp_humd"
 )
+
+// Template type constant
+const (
+	Gateway = iota
+	LightRGB
+	LightTemp
+	LightDim
+	Motion
+	Door
+	CO
+	Smoke
+	Siren
+	Switch1C
+	Switch3C
+	FourPWM
+	LAMP130
+	LAMP110
+	PlugS
+	PlugA
+	Turnable
+	LightRGBOld
+	LightDimOld
+	TemperatureHumidity
+	ZigbeeDoorLock
+	SOSButton
+)
+
+// Status type constant
+const (
+	Initial = iota
+	Notified
+)
+
+func (s TemplateType) String() string {
+	switch s {
+	case LightRGB:
+		return "LightRGB"
+	case LightTemp:
+		return "LightTemp"
+	case LightDim:
+		return "LightDim"
+	case Motion:
+		return "Motion"
+	case Door:
+		return "Door"
+	case CO:
+		return "CO"
+	case Smoke:
+		return "Smoke"
+	case Siren:
+		return "Siren"
+	case Switch1C:
+		return "Switch1C"
+	case Switch3C:
+		return "Switch3C"
+	case FourPWM:
+		return "FourPWM"
+	case LAMP130:
+		return "LAMP130"
+	case LAMP110:
+		return "LAMP110"
+	case PlugS:
+		return "PlugS"
+	case PlugA:
+		return "PlugA"
+	case Turnable:
+		return "Turnable"
+	case LightRGBOld:
+		return "LightRGBOld"
+	case LightDimOld:
+		return "LightDimOld"
+	case TemperatureHumidity:
+		return "TemperatureHumidity"
+	case ZigbeeDoorLock:
+		return "ZigbeeDoorLock"
+	case SOSButton:
+		return "SOSButton"
+	case Gateway:
+		return "Gateway"
+	default:
+		return "Gateway"
+	}
+	return "Gateway"
+}
+func (s NotificationStatus) String() string {
+	switch s {
+	case Notified:
+		return "Notified"
+	case Initial:
+	default:
+		return "Initial"
+	}
+	return "Initial"
+}
 
 func (s StorageType) String() string {
 	switch s {
@@ -195,6 +295,8 @@ func (s NotificationStatus) String() string {
 		return "Timeout"
 	case Canceled:
 		return "Canceled"
+	case Notified:
+		return "Notified"
 	case Initial:
 		return "Initial"
 	default:
