@@ -108,10 +108,10 @@ const (
 	LightRGB
 	LightTemp
 	LightDim
-	Motion
+	MotionTemplate
 	Door
 	CO
-	Smoke
+	SmokeTemplate
 	Siren
 	Switch1C
 	Switch3C
@@ -126,12 +126,6 @@ const (
 	TemperatureHumidity
 	ZigbeeDoorLock
 	SOSButton
-)
-
-// Status type constant
-const (
-	Initial = iota
-	Notified
 )
 
 func (s TemplateType) String() string {
@@ -185,17 +179,6 @@ func (s TemplateType) String() string {
 	}
 	return "Gateway"
 }
-func (s NotificationStatus) String() string {
-	switch s {
-	case Notified:
-		return "Notified"
-	case Initial:
-	default:
-		return "Initial"
-	}
-	return "Initial"
-}
-
 func (s StorageType) String() string {
 	switch s {
 	case Picture:
