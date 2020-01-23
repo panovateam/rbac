@@ -77,6 +77,7 @@ const (
 	Done
 	Timeout
 	Canceled
+	Notified
 )
 
 // TemplateType type constant
@@ -142,7 +143,7 @@ func (s TemplateType) String() string {
 		return "Door"
 	case CO:
 		return "CO"
-	case Smoke:
+	case SmokeTemplate:
 		return "Smoke"
 	case Siren:
 		return "Siren"
@@ -172,12 +173,11 @@ func (s TemplateType) String() string {
 		return "ZigbeeDoorLock"
 	case SOSButton:
 		return "SOSButton"
-	case Gateway:
-		return "Gateway"
+	// case Gateway:
+	// 	return "Gateway"
 	default:
 		return "Gateway"
 	}
-	return "Gateway"
 }
 func (s StorageType) String() string {
 	switch s {
