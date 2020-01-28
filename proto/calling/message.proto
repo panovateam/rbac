@@ -1,6 +1,5 @@
 syntax = "proto3";
 
-package calling;
 
 service SecurityCallingSvc {
   // send notification request to call & sms

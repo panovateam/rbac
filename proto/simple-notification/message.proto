@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "github.com/onskycloud/rbac/proto/calling/calling.proto";
+
 service NotificationSvc {
   // send notification request to call & sms
   rpc Create(Request) returns(Response) { }
@@ -7,7 +9,7 @@ service NotificationSvc {
 }
 
 message Request{
-  Thing thing = 1;
+  calling.Thing thing = 1;
   Thing gateway = 2;
   Thing template = 3;
   Thing zone = 4;
