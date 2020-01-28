@@ -6,7 +6,7 @@ package message
 import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
-	_ "github.com/micro/go-micro/api/proto"
+	calling "github.com/onskycloud/rbac/proto/calling"
 	math "math"
 )
 
@@ -36,7 +36,7 @@ var _ server.Option
 
 type NotificationSvcService interface {
 	// send notification request to call & sms
-	Create(ctx context.Context, in *Request, opts ...client.CallOption) (*Response, error)
+	Create(ctx context.Context, in *Request, opts ...client.CallOption) (*calling.Response, error)
 	GetNotification(ctx context.Context, in *GetNotificationRequest, opts ...client.CallOption) (*GetNotificationResponse, error)
 }
 
@@ -58,9 +58,9 @@ func NewNotificationSvcService(name string, c client.Client) NotificationSvcServ
 	}
 }
 
-func (c *notificationSvcService) Create(ctx context.Context, in *Request, opts ...client.CallOption) (*Response, error) {
+func (c *notificationSvcService) Create(ctx context.Context, in *Request, opts ...client.CallOption) (*calling.Response, error) {
 	req := c.c.NewRequest(c.name, "NotificationSvc.Create", in)
-	out := new(Response)
+	out := new(calling.Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -82,13 +82,13 @@ func (c *notificationSvcService) GetNotification(ctx context.Context, in *GetNot
 
 type NotificationSvcHandler interface {
 	// send notification request to call & sms
-	Create(context.Context, *Request, *Response) error
+	Create(context.Context, *Request, *calling.Response) error
 	GetNotification(context.Context, *GetNotificationRequest, *GetNotificationResponse) error
 }
 
 func RegisterNotificationSvcHandler(s server.Server, hdlr NotificationSvcHandler, opts ...server.HandlerOption) error {
 	type notificationSvc interface {
-		Create(ctx context.Context, in *Request, out *Response) error
+		Create(ctx context.Context, in *Request, out *calling.Response) error
 		GetNotification(ctx context.Context, in *GetNotificationRequest, out *GetNotificationResponse) error
 	}
 	type NotificationSvc struct {
@@ -102,7 +102,7 @@ type notificationSvcHandler struct {
 	NotificationSvcHandler
 }
 
-func (h *notificationSvcHandler) Create(ctx context.Context, in *Request, out *Response) error {
+func (h *notificationSvcHandler) Create(ctx context.Context, in *Request, out *calling.Response) error {
 	return h.NotificationSvcHandler.Create(ctx, in, out)
 }
 
