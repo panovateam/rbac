@@ -7,6 +7,8 @@ import (
 
 type Data struct {
 	CustomerNumber   string          `json:"customerNumber"`
+	TemplateName     string          `json:"templateName"`
+	GatewayName      string          `json:"gatewayName"`
 	ThingName        string          `json:"thingName"`
 	ThingDisplayName string          `json:"thingDisplayName"`
 	ThingSerial      string          `json:"serial"`
@@ -59,9 +61,9 @@ type AlerDataModel struct {
 }
 
 type Trigger struct {
-	Namespace    string `json:"namespace,omitempty"`
-	Micro    string `json:"micro,omitempty"`
-	Endpoint string `json:"endpoint,omitempty"`
-	Body     string `json:"body,omitempty"`
-	Params   string `json:"params,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
+	Micro     string `json:"micro,omitempty"`
+	Endpoint  string `json:"endpoint,omitempty"`
+	Body      string `json:"body,omitempty"`
+	Params    string `json:"params,omitempty"`
 }
