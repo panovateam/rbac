@@ -11,9 +11,9 @@ type Policy struct {
 }
 
 type ResourceType struct {
-	Name        string   `json:"name,omitempty"`
-	Effect      string   `json:"effect,omitempty"`
-	ResouceType string   `json:"resouceType,omitempty"`
-	Actions     []string `json:"actions,omitempty"`
-	Resources   []string `json:"resources,omitempty"`
+	Name         string   `json:"name,omitempty"`
+	Effect       string   `json:"effect,omitempty"`
+	ResourceType string   `json:"resourceType,omitempty"`
+	Actions      []string `json:"actions,omitempty"`
+	Resources    []string `json:"resources,omitempty"`
 }
