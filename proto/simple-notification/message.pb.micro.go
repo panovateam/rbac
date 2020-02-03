@@ -6,6 +6,7 @@ package message
 import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	proto1 "github.com/micro/go-micro/api/proto"
 	calling "github.com/onskycloud/rbac/proto/calling"
 	math "math"
 )
@@ -38,6 +39,7 @@ type NotificationSvcService interface {
 	// send notification request to call & sms
 	Create(ctx context.Context, in *Request, opts ...client.CallOption) (*calling.Response, error)
 	GetNotification(ctx context.Context, in *GetNotificationRequest, opts ...client.CallOption) (*GetNotificationResponse, error)
+	GetNotificationAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
 }
 
 type notificationSvcService struct {
@@ -78,18 +80,30 @@ func (c *notificationSvcService) GetNotification(ctx context.Context, in *GetNot
 	return out, nil
 }
 
+func (c *notificationSvcService) GetNotificationAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error) {
+	req := c.c.NewRequest(c.name, "NotificationSvc.GetNotificationAPI", in)
+	out := new(proto1.Response)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for NotificationSvc service
 
 type NotificationSvcHandler interface {
 	// send notification request to call & sms
 	Create(context.Context, *Request, *calling.Response) error
 	GetNotification(context.Context, *GetNotificationRequest, *GetNotificationResponse) error
+	GetNotificationAPI(context.Context, *proto1.Request, *proto1.Response) error
 }
 
 func RegisterNotificationSvcHandler(s server.Server, hdlr NotificationSvcHandler, opts ...server.HandlerOption) error {
 	type notificationSvc interface {
 		Create(ctx context.Context, in *Request, out *calling.Response) error
 		GetNotification(ctx context.Context, in *GetNotificationRequest, out *GetNotificationResponse) error
+		GetNotificationAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error
 	}
 	type NotificationSvc struct {
 		notificationSvc
@@ -108,4 +122,8 @@ func (h *notificationSvcHandler) Create(ctx context.Context, in *Request, out *c
 
 func (h *notificationSvcHandler) GetNotification(ctx context.Context, in *GetNotificationRequest, out *GetNotificationResponse) error {
 	return h.NotificationSvcHandler.GetNotification(ctx, in, out)
+}
+
+func (h *notificationSvcHandler) GetNotificationAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error {
+	return h.NotificationSvcHandler.GetNotificationAPI(ctx, in, out)
 }
