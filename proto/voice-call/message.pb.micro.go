@@ -6,6 +6,7 @@ package message
 import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	proto1 "github.com/micro/go-micro/api/proto"
 	math "math"
 )
 
@@ -38,6 +39,8 @@ type CallingSvcService interface {
 	SendMessage(ctx context.Context, in *MessageRequest, opts ...client.CallOption) (*MessageResponse, error)
 	GetCallBySid(ctx context.Context, in *GetCallRequest, opts ...client.CallOption) (*GetCallResponse, error)
 	GetMessageBySid(ctx context.Context, in *GetCallRequest, opts ...client.CallOption) (*GetMessageResponse, error)
+	SendCallAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
+	SendMessageAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
 }
 
 type callingSvcService struct {
@@ -98,6 +101,26 @@ func (c *callingSvcService) GetMessageBySid(ctx context.Context, in *GetCallRequ
 	return out, nil
 }
 
+func (c *callingSvcService) SendCallAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error) {
+	req := c.c.NewRequest(c.name, "CallingSvc.SendCallAPI", in)
+	out := new(proto1.Response)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *callingSvcService) SendMessageAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error) {
+	req := c.c.NewRequest(c.name, "CallingSvc.SendMessageAPI", in)
+	out := new(proto1.Response)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for CallingSvc service
 
 type CallingSvcHandler interface {
@@ -105,6 +128,8 @@ type CallingSvcHandler interface {
 	SendMessage(context.Context, *MessageRequest, *MessageResponse) error
 	GetCallBySid(context.Context, *GetCallRequest, *GetCallResponse) error
 	GetMessageBySid(context.Context, *GetCallRequest, *GetMessageResponse) error
+	SendCallAPI(context.Context, *proto1.Request, *proto1.Response) error
+	SendMessageAPI(context.Context, *proto1.Request, *proto1.Response) error
 }
 
 func RegisterCallingSvcHandler(s server.Server, hdlr CallingSvcHandler, opts ...server.HandlerOption) error {
@@ -113,6 +138,8 @@ func RegisterCallingSvcHandler(s server.Server, hdlr CallingSvcHandler, opts ...
 		SendMessage(ctx context.Context, in *MessageRequest, out *MessageResponse) error
 		GetCallBySid(ctx context.Context, in *GetCallRequest, out *GetCallResponse) error
 		GetMessageBySid(ctx context.Context, in *GetCallRequest, out *GetMessageResponse) error
+		SendCallAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error
+		SendMessageAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error
 	}
 	type CallingSvc struct {
 		callingSvc
@@ -139,4 +166,12 @@ func (h *callingSvcHandler) GetCallBySid(ctx context.Context, in *GetCallRequest
 
 func (h *callingSvcHandler) GetMessageBySid(ctx context.Context, in *GetCallRequest, out *GetMessageResponse) error {
 	return h.CallingSvcHandler.GetMessageBySid(ctx, in, out)
+}
+
+func (h *callingSvcHandler) SendCallAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error {
+	return h.CallingSvcHandler.SendCallAPI(ctx, in, out)
+}
+
+func (h *callingSvcHandler) SendMessageAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error {
+	return h.CallingSvcHandler.SendMessageAPI(ctx, in, out)
 }
