@@ -5,7 +5,10 @@ service CallingSvc {
     rpc SendMessage(MessageRequest) returns(MessageResponse) { }
     rpc GetCallBySid(GetCallRequest) returns(GetCallResponse) { }
     rpc GetMessageBySid(GetCallRequest) returns(GetMessageResponse) { }
-}
+    
+    rpc SendCallAPI (go.api.Request) returns (go.api.Response);
+    rpc SendMessageAPI (go.api.Request) returns (go.api.Response);
+  }
 
 message CallingRequest {
   string to = 1;
