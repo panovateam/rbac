@@ -9,6 +9,7 @@ service IotSvc {
 	rpc Log(DataRequest) returns (DataResponse) {}
     rpc HistoryBySerial (go.api.Request) returns (go.api.Response);
     rpc HistoryByCustomer (go.api.Request) returns (go.api.Response);
+    rpc GetDeviceMapFail (go.api.Request) returns (go.api.Response);
 }
 message EmptyRequest {
 }

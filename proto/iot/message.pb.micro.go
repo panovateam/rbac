@@ -41,6 +41,7 @@ type IotSvcService interface {
 	Log(ctx context.Context, in *DataRequest, opts ...client.CallOption) (*DataResponse, error)
 	HistoryBySerial(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
 	HistoryByCustomer(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
+	GetDeviceMapFail(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
 }
 
 type iotSvcService struct {
@@ -121,6 +122,16 @@ func (c *iotSvcService) HistoryByCustomer(ctx context.Context, in *proto1.Reques
 	return out, nil
 }
 
+func (c *iotSvcService) GetDeviceMapFail(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error) {
+	req := c.c.NewRequest(c.name, "IotSvc.GetDeviceMapFail", in)
+	out := new(proto1.Response)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for IotSvc service
 
 type IotSvcHandler interface {
@@ -130,6 +141,7 @@ type IotSvcHandler interface {
 	Log(context.Context, *DataRequest, *DataResponse) error
 	HistoryBySerial(context.Context, *proto1.Request, *proto1.Response) error
 	HistoryByCustomer(context.Context, *proto1.Request, *proto1.Response) error
+	GetDeviceMapFail(context.Context, *proto1.Request, *proto1.Response) error
 }
 
 func RegisterIotSvcHandler(s server.Server, hdlr IotSvcHandler, opts ...server.HandlerOption) error {
@@ -140,6 +152,7 @@ func RegisterIotSvcHandler(s server.Server, hdlr IotSvcHandler, opts ...server.H
 		Log(ctx context.Context, in *DataRequest, out *DataResponse) error
 		HistoryBySerial(ctx context.Context, in *proto1.Request, out *proto1.Response) error
 		HistoryByCustomer(ctx context.Context, in *proto1.Request, out *proto1.Response) error
+		GetDeviceMapFail(ctx context.Context, in *proto1.Request, out *proto1.Response) error
 	}
 	type IotSvc struct {
 		iotSvc
@@ -174,4 +187,8 @@ func (h *iotSvcHandler) HistoryBySerial(ctx context.Context, in *proto1.Request,
 
 func (h *iotSvcHandler) HistoryByCustomer(ctx context.Context, in *proto1.Request, out *proto1.Response) error {
 	return h.IotSvcHandler.HistoryByCustomer(ctx, in, out)
+}
+
+func (h *iotSvcHandler) GetDeviceMapFail(ctx context.Context, in *proto1.Request, out *proto1.Response) error {
+	return h.IotSvcHandler.GetDeviceMapFail(ctx, in, out)
 }
