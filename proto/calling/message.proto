@@ -60,6 +60,7 @@ message CallingRequest {
   string customerNumber =6;
   string macAddress =7; //real gateway?
   int32 forceType = 8; // type = 0 default (onsky default security+safety calling), 1 : observer call,2: locus SOS
+  ClientConfig observerConfig = 9;
 }
 
 message Thing {

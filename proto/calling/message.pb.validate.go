@@ -270,6 +270,16 @@ func (m *CallingRequest) Validate() error {
 
 	// no validation rules for ForceType
 
+	if v, ok := interface{}(m.GetObserverConfig()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CallingRequestValidationError{
+				field:  "ObserverConfig",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	return nil
 }
 
