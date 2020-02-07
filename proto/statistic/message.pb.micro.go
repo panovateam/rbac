@@ -36,6 +36,7 @@ var _ server.Option
 
 type SystemSvcService interface {
 	GetCallingActivating(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
+	GetCountAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
 }
 
 type systemSvcService struct {
@@ -66,15 +67,27 @@ func (c *systemSvcService) GetCallingActivating(ctx context.Context, in *proto1.
 	return out, nil
 }
 
+func (c *systemSvcService) GetCountAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error) {
+	req := c.c.NewRequest(c.name, "SystemSvc.GetCountAPI", in)
+	out := new(proto1.Response)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for SystemSvc service
 
 type SystemSvcHandler interface {
 	GetCallingActivating(context.Context, *proto1.Request, *proto1.Response) error
+	GetCountAPI(context.Context, *proto1.Request, *proto1.Response) error
 }
 
 func RegisterSystemSvcHandler(s server.Server, hdlr SystemSvcHandler, opts ...server.HandlerOption) error {
 	type systemSvc interface {
 		GetCallingActivating(ctx context.Context, in *proto1.Request, out *proto1.Response) error
+		GetCountAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error
 	}
 	type SystemSvc struct {
 		systemSvc
@@ -89,4 +102,8 @@ type systemSvcHandler struct {
 
 func (h *systemSvcHandler) GetCallingActivating(ctx context.Context, in *proto1.Request, out *proto1.Response) error {
 	return h.SystemSvcHandler.GetCallingActivating(ctx, in, out)
+}
+
+func (h *systemSvcHandler) GetCountAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error {
+	return h.SystemSvcHandler.GetCountAPI(ctx, in, out)
 }
