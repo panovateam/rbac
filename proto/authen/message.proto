@@ -1,9 +1,13 @@
 syntax = "proto3";
 
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
 service AuthenSvc {
 	rpc GetCustomer(CustomerRequest) returns (CustomerResponse) {}
 	rpc GetCustomerByEmail(CustomerByUserNameRequest) returns (CustomerResponse) {}
 	rpc VerifyPermission(VerifyPermissionRequest) returns (VerifyPermissionResponse) {}
+    rpc CountCustomer (google.protobuf.Empty) returns (google.protobuf.Int64Value);
 	//rpc VerifyPermissionFromContext(VerifyPermissionRequest) returns (VerifyPermissionResponse) {}
 }
 message EmptyRequest {

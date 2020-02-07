@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "github.com/micro/go-micro/api/proto/api.proto";
+import "google/protobuf/wrappers.proto";
 
 service IotSvc {
 	rpc GetGateway(ThingRequest) returns (ThingResponse) {}
@@ -10,6 +11,7 @@ service IotSvc {
     rpc HistoryBySerial (go.api.Request) returns (go.api.Response);
     rpc HistoryByCustomer (go.api.Request) returns (go.api.Response);
     rpc GetDeviceMapFail (go.api.Request) returns (go.api.Response);
+    rpc CountThing (google.protobuf.StringValue) returns (google.protobuf.Int64Value);
 }
 message EmptyRequest {
 }

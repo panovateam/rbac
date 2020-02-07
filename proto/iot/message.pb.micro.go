@@ -6,6 +6,7 @@ package message
 import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	proto1 "github.com/micro/go-micro/api/proto"
 	math "math"
 )
@@ -42,6 +43,7 @@ type IotSvcService interface {
 	HistoryBySerial(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
 	HistoryByCustomer(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
 	GetDeviceMapFail(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
+	CountThing(ctx context.Context, in *wrappers.StringValue, opts ...client.CallOption) (*wrappers.Int64Value, error)
 }
 
 type iotSvcService struct {
@@ -132,6 +134,16 @@ func (c *iotSvcService) GetDeviceMapFail(ctx context.Context, in *proto1.Request
 	return out, nil
 }
 
+func (c *iotSvcService) CountThing(ctx context.Context, in *wrappers.StringValue, opts ...client.CallOption) (*wrappers.Int64Value, error) {
+	req := c.c.NewRequest(c.name, "IotSvc.CountThing", in)
+	out := new(wrappers.Int64Value)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for IotSvc service
 
 type IotSvcHandler interface {
@@ -142,6 +154,7 @@ type IotSvcHandler interface {
 	HistoryBySerial(context.Context, *proto1.Request, *proto1.Response) error
 	HistoryByCustomer(context.Context, *proto1.Request, *proto1.Response) error
 	GetDeviceMapFail(context.Context, *proto1.Request, *proto1.Response) error
+	CountThing(context.Context, *wrappers.StringValue, *wrappers.Int64Value) error
 }
 
 func RegisterIotSvcHandler(s server.Server, hdlr IotSvcHandler, opts ...server.HandlerOption) error {
@@ -153,6 +166,7 @@ func RegisterIotSvcHandler(s server.Server, hdlr IotSvcHandler, opts ...server.H
 		HistoryBySerial(ctx context.Context, in *proto1.Request, out *proto1.Response) error
 		HistoryByCustomer(ctx context.Context, in *proto1.Request, out *proto1.Response) error
 		GetDeviceMapFail(ctx context.Context, in *proto1.Request, out *proto1.Response) error
+		CountThing(ctx context.Context, in *wrappers.StringValue, out *wrappers.Int64Value) error
 	}
 	type IotSvc struct {
 		iotSvc
@@ -191,4 +205,8 @@ func (h *iotSvcHandler) HistoryByCustomer(ctx context.Context, in *proto1.Reques
 
 func (h *iotSvcHandler) GetDeviceMapFail(ctx context.Context, in *proto1.Request, out *proto1.Response) error {
 	return h.IotSvcHandler.GetDeviceMapFail(ctx, in, out)
+}
+
+func (h *iotSvcHandler) CountThing(ctx context.Context, in *wrappers.StringValue, out *wrappers.Int64Value) error {
+	return h.IotSvcHandler.CountThing(ctx, in, out)
 }
