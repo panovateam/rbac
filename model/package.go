@@ -14,10 +14,11 @@ type PackageCache struct {
 	CustomerNumber   string
 	Duration         uint16
 	HaveTrialPackage bool
-	TrialDuration    uint16
+	TrialDuration    string
 	Meta             map[string]interface{}
 	IntervalTime     uint16
 	Quota            uint16
 	ServiceName      string
 	Currency         string
+	Promotion        *Promotion
 }
