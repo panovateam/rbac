@@ -21,5 +21,4 @@ type PackageCache struct {
 	ServiceName      string
 	Currency         string
 	Promotion        *Promotion
-	Image            string
 }
