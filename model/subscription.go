@@ -55,7 +55,7 @@ type SubscriptionCache struct {
 	Service          string                 `json:"service"`
 	Status           uint8                  `json:"status"`
 	HaveTrialPackage bool                   `json:"have_trial_package"`
-	TrialDuration    uint16                 `json:"trial_duration"`
+	TrialDuration    string                 `json:"trial_duration"`
 	Price            uint64                 `json:"price"`
 	IsAutoCharge     bool                   `json:"is_auto_charge"`
 	CardToken        string                 `json:"card_token"`
