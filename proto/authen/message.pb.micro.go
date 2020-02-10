@@ -37,6 +37,7 @@ var _ server.Option
 
 type AuthenSvcService interface {
 	GetCustomer(ctx context.Context, in *CustomerRequest, opts ...client.CallOption) (*CustomerResponse, error)
+	GetObserver(ctx context.Context, in *CustomerRequest, opts ...client.CallOption) (*CustomerResponse, error)
 	GetCustomerByEmail(ctx context.Context, in *CustomerByUserNameRequest, opts ...client.CallOption) (*CustomerResponse, error)
 	VerifyPermission(ctx context.Context, in *VerifyPermissionRequest, opts ...client.CallOption) (*VerifyPermissionResponse, error)
 	CountCustomer(ctx context.Context, in *empty.Empty, opts ...client.CallOption) (*wrappers.Int64Value, error)
@@ -62,6 +63,16 @@ func NewAuthenSvcService(name string, c client.Client) AuthenSvcService {
 
 func (c *authenSvcService) GetCustomer(ctx context.Context, in *CustomerRequest, opts ...client.CallOption) (*CustomerResponse, error) {
 	req := c.c.NewRequest(c.name, "AuthenSvc.GetCustomer", in)
+	out := new(CustomerResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authenSvcService) GetObserver(ctx context.Context, in *CustomerRequest, opts ...client.CallOption) (*CustomerResponse, error) {
+	req := c.c.NewRequest(c.name, "AuthenSvc.GetObserver", in)
 	out := new(CustomerResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -104,6 +115,7 @@ func (c *authenSvcService) CountCustomer(ctx context.Context, in *empty.Empty, o
 
 type AuthenSvcHandler interface {
 	GetCustomer(context.Context, *CustomerRequest, *CustomerResponse) error
+	GetObserver(context.Context, *CustomerRequest, *CustomerResponse) error
 	GetCustomerByEmail(context.Context, *CustomerByUserNameRequest, *CustomerResponse) error
 	VerifyPermission(context.Context, *VerifyPermissionRequest, *VerifyPermissionResponse) error
 	CountCustomer(context.Context, *empty.Empty, *wrappers.Int64Value) error
@@ -112,6 +124,7 @@ type AuthenSvcHandler interface {
 func RegisterAuthenSvcHandler(s server.Server, hdlr AuthenSvcHandler, opts ...server.HandlerOption) error {
 	type authenSvc interface {
 		GetCustomer(ctx context.Context, in *CustomerRequest, out *CustomerResponse) error
+		GetObserver(ctx context.Context, in *CustomerRequest, out *CustomerResponse) error
 		GetCustomerByEmail(ctx context.Context, in *CustomerByUserNameRequest, out *CustomerResponse) error
 		VerifyPermission(ctx context.Context, in *VerifyPermissionRequest, out *VerifyPermissionResponse) error
 		CountCustomer(ctx context.Context, in *empty.Empty, out *wrappers.Int64Value) error
@@ -129,6 +142,10 @@ type authenSvcHandler struct {
 
 func (h *authenSvcHandler) GetCustomer(ctx context.Context, in *CustomerRequest, out *CustomerResponse) error {
 	return h.AuthenSvcHandler.GetCustomer(ctx, in, out)
+}
+
+func (h *authenSvcHandler) GetObserver(ctx context.Context, in *CustomerRequest, out *CustomerResponse) error {
+	return h.AuthenSvcHandler.GetObserver(ctx, in, out)
 }
 
 func (h *authenSvcHandler) GetCustomerByEmail(ctx context.Context, in *CustomerByUserNameRequest, out *CustomerResponse) error {
