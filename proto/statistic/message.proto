@@ -6,4 +6,5 @@ service SystemSvc {
   rpc GetCallingActivating (go.api.Request) returns (go.api.Response);
   rpc GetCountAPI (go.api.Request) returns (go.api.Response);
   rpc GetMapDirectionAPI (go.api.Request) returns (go.api.Response);
+  rpc SendObserverEmailAPI (go.api.Request) returns (go.api.Response);
 }

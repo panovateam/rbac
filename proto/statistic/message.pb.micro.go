@@ -38,6 +38,7 @@ type SystemSvcService interface {
 	GetCallingActivating(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
 	GetCountAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
 	GetMapDirectionAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
+	SendObserverEmailAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
 }
 
 type systemSvcService struct {
@@ -88,12 +89,23 @@ func (c *systemSvcService) GetMapDirectionAPI(ctx context.Context, in *proto1.Re
 	return out, nil
 }
 
+func (c *systemSvcService) SendObserverEmailAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error) {
+	req := c.c.NewRequest(c.name, "SystemSvc.SendObserverEmailAPI", in)
+	out := new(proto1.Response)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for SystemSvc service
 
 type SystemSvcHandler interface {
 	GetCallingActivating(context.Context, *proto1.Request, *proto1.Response) error
 	GetCountAPI(context.Context, *proto1.Request, *proto1.Response) error
 	GetMapDirectionAPI(context.Context, *proto1.Request, *proto1.Response) error
+	SendObserverEmailAPI(context.Context, *proto1.Request, *proto1.Response) error
 }
 
 func RegisterSystemSvcHandler(s server.Server, hdlr SystemSvcHandler, opts ...server.HandlerOption) error {
@@ -101,6 +113,7 @@ func RegisterSystemSvcHandler(s server.Server, hdlr SystemSvcHandler, opts ...se
 		GetCallingActivating(ctx context.Context, in *proto1.Request, out *proto1.Response) error
 		GetCountAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error
 		GetMapDirectionAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error
+		SendObserverEmailAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error
 	}
 	type SystemSvc struct {
 		systemSvc
@@ -123,4 +136,8 @@ func (h *systemSvcHandler) GetCountAPI(ctx context.Context, in *proto1.Request, 
 
 func (h *systemSvcHandler) GetMapDirectionAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error {
 	return h.SystemSvcHandler.GetMapDirectionAPI(ctx, in, out)
+}
+
+func (h *systemSvcHandler) SendObserverEmailAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error {
+	return h.SystemSvcHandler.SendObserverEmailAPI(ctx, in, out)
 }
