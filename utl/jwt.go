@@ -1,7 +1,6 @@
 package utl
 
 import (
-	"fmt"
 	"strings"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -30,7 +29,6 @@ func ParseToken(key string, algo string, token string) (*model.AuthUser, error) 
 	if !(len(parts) == 2 && parts[0] == "Bearer") {
 		return nil, errors.BadRequest(ServiceName, "rbac:utl:ParseToken:invalid:%s", token)
 	}
-	fmt.Printf("rbac:utl:ParseToken:debug:token:%s\n", parts[1])
 	j, err := jwt.ParseWithClaims(parts[1], &jwtUser{}, func(token *jwt.Token) (interface{}, error) {
 		if jwt.GetSigningMethod(algo) != token.Method {
 			return nil, errors.Forbidden(ServiceName, "rbac:utl:ParseToken:forbidden:%s", parts[1])
