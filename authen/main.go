@@ -193,7 +193,11 @@ func (r *RBAC) EnforcePolicy(role uint8, customerNumber string, userUUID string,
 		return nil, err
 	}
 	if user.Policies == nil || len(user.Policies) == 0 {
-		return nil, errors.Forbidden(ServiceName, "enforcePolicy:policy:empty:action:%+v - actionCache:%+v - customerNumber:%+v - user:%+v\n", action, actionCache, customerNumber, user)
+		// try to get policies again
+		err = r.GetDataFromCacheWorkaround(POLICY, r.UserCacheKey, userUUID, user)
+		if user.Policies == nil || len(user.Policies) == 0 {
+			return nil, errors.Forbidden(ServiceName, "enforcePolicy:policy:empty:action:%+v - actionCache:%+v - customerNumber:%+v - user:%+v\n", action, actionCache, customerNumber, user)
+		}
 	}
 
 	assignedResources := getAssignedResources(action, actionCache, customerNumber, user.Policies)
@@ -352,6 +356,42 @@ func (r *RBAC) GetDataFromCache(mode CallbackType, key string, field string, res
 	return nil
 }
 
+// GetDataFromCacheWorkaround workaround
+func (r *RBAC) GetDataFromCacheWorkaround(mode CallbackType, key, field string, result interface{}) error {
+	fmt.Printf("trying to get %v for key %s and field %s", mode, key, field)
+	var temp interface{}
+	switch mode {
+	case POLICY:
+		input := map[string]string{
+			"user_uuid": field,
+		}
+		fmt.Printf("callback func workaround: %+v\n", input)
+		_, err := r.Callback(POLICY, input)
+		if err != nil {
+			return err
+		}
+		break
+	default:
+		return nil
+	}
+	// try to get from cache
+	err := r.DB.GetObject(key, field, &temp)
+	if err != nil {
+		if err.Error() == errors.RedisEmpty {
+			return errors.NotFound(ServiceName, "enforcePolicy:policy:GetDataFromCacheWorkaround:empty:%s\n", field)
+		}
+		return err
+	}
+	b, err := json.Marshal(temp)
+	if err != nil {
+		return errors.InternalServerError(ServiceName, "enforcePolicy:GetDataFromCacheWorkaround:marshalProblem:%+v\n", temp)
+	}
+	json.Unmarshal(b, result)
+	if result == nil {
+		return errors.InternalServerError(ServiceName, "enforcePolicy:GetDataFromCacheWorkaround:wrongData")
+	}
+	return nil
+}
 func checkAdmin(role uint8, compareResources []string, actionCache *resourcehelper.ItemActionCache, customerNumber string) ([]string, error) {
 	var results []string
 	err := enforceRole(role, model.AdminRole)
