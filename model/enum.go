@@ -101,6 +101,8 @@ const (
 	SafetyAlarmEnable           = "safety_alarm_enable"
 	SafetyAlarmDisable          = "safety_alarm_disable"
 	SafetyBreachMessageTempHumd = "safety_breach_temp_humd"
+	LowBatteryMessage           = "battery_low"
+	FullBatteryMessage          = "battery_full"
 )
 
 // Template type constant
@@ -301,6 +303,7 @@ const (
 	SafetyBreachTempHumd
 	OSLocusTemp
 	OSLocusSOS
+	LowBattery
 	Complex
 )
 
@@ -332,6 +335,8 @@ func (s NotificationType) String() string {
 		return "OSLocusTemp"
 	case OSLocusSOS:
 		return "OSLocusSOS"
+	case LowBattery:
+		return "LowBattery"
 	default:
 		return "Simple"
 	}

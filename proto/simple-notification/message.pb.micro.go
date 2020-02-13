@@ -38,6 +38,7 @@ var _ server.Option
 type NotificationSvcService interface {
 	// send notification request to call & sms
 	Create(ctx context.Context, in *Request, opts ...client.CallOption) (*calling.Response, error)
+	CreateWithNotify(ctx context.Context, in *NotifyRequest, opts ...client.CallOption) (*calling.Response, error)
 	GetNotification(ctx context.Context, in *GetNotificationRequest, opts ...client.CallOption) (*GetNotificationResponse, error)
 	GetNotificationAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
 }
@@ -62,6 +63,16 @@ func NewNotificationSvcService(name string, c client.Client) NotificationSvcServ
 
 func (c *notificationSvcService) Create(ctx context.Context, in *Request, opts ...client.CallOption) (*calling.Response, error) {
 	req := c.c.NewRequest(c.name, "NotificationSvc.Create", in)
+	out := new(calling.Response)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *notificationSvcService) CreateWithNotify(ctx context.Context, in *NotifyRequest, opts ...client.CallOption) (*calling.Response, error) {
+	req := c.c.NewRequest(c.name, "NotificationSvc.CreateWithNotify", in)
 	out := new(calling.Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -95,6 +106,7 @@ func (c *notificationSvcService) GetNotificationAPI(ctx context.Context, in *pro
 type NotificationSvcHandler interface {
 	// send notification request to call & sms
 	Create(context.Context, *Request, *calling.Response) error
+	CreateWithNotify(context.Context, *NotifyRequest, *calling.Response) error
 	GetNotification(context.Context, *GetNotificationRequest, *GetNotificationResponse) error
 	GetNotificationAPI(context.Context, *proto1.Request, *proto1.Response) error
 }
@@ -102,6 +114,7 @@ type NotificationSvcHandler interface {
 func RegisterNotificationSvcHandler(s server.Server, hdlr NotificationSvcHandler, opts ...server.HandlerOption) error {
 	type notificationSvc interface {
 		Create(ctx context.Context, in *Request, out *calling.Response) error
+		CreateWithNotify(ctx context.Context, in *NotifyRequest, out *calling.Response) error
 		GetNotification(ctx context.Context, in *GetNotificationRequest, out *GetNotificationResponse) error
 		GetNotificationAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error
 	}
@@ -118,6 +131,10 @@ type notificationSvcHandler struct {
 
 func (h *notificationSvcHandler) Create(ctx context.Context, in *Request, out *calling.Response) error {
 	return h.NotificationSvcHandler.Create(ctx, in, out)
+}
+
+func (h *notificationSvcHandler) CreateWithNotify(ctx context.Context, in *NotifyRequest, out *calling.Response) error {
+	return h.NotificationSvcHandler.CreateWithNotify(ctx, in, out)
 }
 
 func (h *notificationSvcHandler) GetNotification(ctx context.Context, in *GetNotificationRequest, out *GetNotificationResponse) error {
