@@ -48,6 +48,8 @@ message DataRequest {
 	int32 propertyId = 8;
 	int32 thingId = 9;
 	repeated AlertData alerts = 10;
+	int32 templateId = 11;
+	string templateName = 12;
 }
 
 message AlertData {

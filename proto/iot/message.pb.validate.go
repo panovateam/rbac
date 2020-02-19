@@ -440,6 +440,10 @@ func (m *DataRequest) Validate() error {
 
 	}
 
+	// no validation rules for TemplateId
+
+	// no validation rules for TemplateName
+
 	return nil
 }
 
