@@ -17,6 +17,7 @@ type Data struct {
 	Value            string          `json:"value"`
 	PropertyId       int             `json:"propertyId"`
 	ThingId          int             `json:"thingId"`
+	TemplateId       int             `json:"templateId"`
 	Alerts           []AlerDataModel `json:"alerts"`
 }
 
