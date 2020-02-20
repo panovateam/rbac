@@ -1,5 +1,11 @@
 syntax = "proto3";
 
+import "github.com/micro/go-micro/api/proto/api.proto";
+
+service SecurityCalling {
+  rpc UpdateCall(go.api.Request) returns(go.api.Response) { }
+  rpc UpdateMessage(go.api.Request) returns(go.api.Response) { }
+}
 
 service SecurityCallingSvc {
   // send notification request to call & sms
@@ -11,9 +17,9 @@ service SecurityCallingSvc {
   // // using voice api in another service can response XML content
   // rpc Voice(VoiceRequest) returns(VoiceResponse) { }
   // // update call status
-  rpc UpdateCall(UpdateCallRequest) returns(Response) { }
+  //rpc UpdateCall(UpdateCallRequest) returns(Response) { }
   // // update message status
-  rpc UpdateMessage(UpdateMessageRequest) returns(Response) { }
+  //rpc UpdateMessage(UpdateMessageRequest) returns(Response) { }
   //  | TODO: using graphQL
   // // get notifications list
   // rpc GetNotifications(CallingRequest) returns(CallingResponse) { }
