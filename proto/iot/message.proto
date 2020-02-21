@@ -12,7 +12,7 @@ service IotSvc {
     rpc HistoryByCustomer (go.api.Request) returns (go.api.Response);
     rpc GetDeviceMapFail (go.api.Request) returns (go.api.Response);
 	rpc CountThing (google.protobuf.StringValue) returns (google.protobuf.Int64Value);
-	rpc GetChartData(go.api.Request) returns (go.api.Response);
+	// rpc GetChartData(go.api.Request) returns (go.api.Response);
 }
 message EmptyRequest {
 }
