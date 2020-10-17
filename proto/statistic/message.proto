@@ -1,9 +1,11 @@
 syntax = "proto3";
 
-import "github.com/panovateam/rbac/proto/api/api.proto";
+package system.statistic;
+option go_package = "github.com/panovateam/rbac/proto/statistic";
+import "github.com/panovateam/rbac/proto/api/message.proto";
 
 service SystemSvc {
-  rpc GetDPChartAPI (go.api.Request) returns (go.api.Response);
-  rpc GetDPHighChartAPI (go.api.Request) returns (go.api.Response);
-  rpc GetDPLowChartAPI (go.api.Request) returns (go.api.Response);
+  rpc GetDPChartAPI (api.Request) returns (api.Response);
+  rpc GetDPHighChartAPI (api.Request) returns (api.Response);
+  rpc GetDPLowChartAPI (api.Request) returns (api.Response);
 }

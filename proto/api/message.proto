@@ -1,6 +1,7 @@
 syntax = "proto3";
 
-package go.api;
+package api;
+option go_package = "github.com/panovateam/rbac/proto/api";
 
 message Pair {
 	string key = 1;
