@@ -1,4 +1,4 @@
-module github.com/onskycloud/rbac
+module github.com/panovateam/rbac
 
 go 1.13
 

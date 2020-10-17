@@ -10,8 +10,8 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/onskycloud/errors"
 	"github.com/onskycloud/go-redis"
-	"github.com/onskycloud/rbac/model"
-	"github.com/onskycloud/rbac/utl"
+	"github.com/panovateam/rbac/model"
+	"github.com/panovateam/rbac/utl"
 	resourcehelper "github.com/onskycloud/resource-helper"
 )
 

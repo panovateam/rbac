@@ -5,7 +5,7 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/onskycloud/errors"
-	"github.com/onskycloud/rbac/model"
+	"github.com/panovateam/rbac/model"
 )
 
 // ServiceName Seperate Char

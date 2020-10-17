@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/onskycloud/go-redis"
-	"github.com/onskycloud/rbac/model"
+	"github.com/panovateam/rbac/model"
 	resourcehelper "github.com/onskycloud/resource-helper"
 )
 
