@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package system.statistic;
-option go_package = "statistic;system_statistic_";
+option go_package = "system_statistic;github_com_panovateam_rbac_proto_statistic";
 import  "github.com/panovateam/rbac/proto/api/message.proto";
 
 service SystemSvc {
