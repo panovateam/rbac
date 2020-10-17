@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-import "github.com/onskycloud/rbac/proto/calling/message.proto";
-import "github.com/micro/go-micro/api/proto/api.proto";
+import "github.com/panovateam/rbac/proto/calling/message.proto";
+import "github.com/panovateam/rbac/proto/api/api.proto";
 
 service NotificationSvc {
   // send notification request to call & sms

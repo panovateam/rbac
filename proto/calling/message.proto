@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package calling;
 
-import "github.com/micro/go-micro/api/proto/api.proto";
+import "github.com/panovateam/rbac/proto/api/api.proto";
 
 service SecurityCalling {
   rpc UpdateCall(go.api.Request) returns(go.api.Response) { }
