@@ -16,3 +16,5 @@ protoc \
 --go_out=. \
 --validate_out="lang=go:." \
 $NAME/message.proto
+
+echo $NAME was generated!
