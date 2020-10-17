@@ -4,6 +4,7 @@
 package system_statistic_
 
 import (
+	api "api"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
 	math "math"
@@ -34,6 +35,9 @@ var _ server.Option
 // Client API for SystemSvc service
 
 type SystemSvcService interface {
+	GetDPChartAPI(ctx context.Context, in *api.Request, opts ...client.CallOption) (*api.Response, error)
+	GetDPHighChartAPI(ctx context.Context, in *api.Request, opts ...client.CallOption) (*api.Response, error)
+	GetDPLowChartAPI(ctx context.Context, in *api.Request, opts ...client.CallOption) (*api.Response, error)
 }
 
 type systemSvcService struct {
@@ -54,13 +58,49 @@ func NewSystemSvcService(name string, c client.Client) SystemSvcService {
 	}
 }
 
+func (c *systemSvcService) GetDPChartAPI(ctx context.Context, in *api.Request, opts ...client.CallOption) (*api.Response, error) {
+	req := c.c.NewRequest(c.name, "SystemSvc.GetDPChartAPI", in)
+	out := new(api.Response)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemSvcService) GetDPHighChartAPI(ctx context.Context, in *api.Request, opts ...client.CallOption) (*api.Response, error) {
+	req := c.c.NewRequest(c.name, "SystemSvc.GetDPHighChartAPI", in)
+	out := new(api.Response)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemSvcService) GetDPLowChartAPI(ctx context.Context, in *api.Request, opts ...client.CallOption) (*api.Response, error) {
+	req := c.c.NewRequest(c.name, "SystemSvc.GetDPLowChartAPI", in)
+	out := new(api.Response)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for SystemSvc service
 
 type SystemSvcHandler interface {
+	GetDPChartAPI(context.Context, *api.Request, *api.Response) error
+	GetDPHighChartAPI(context.Context, *api.Request, *api.Response) error
+	GetDPLowChartAPI(context.Context, *api.Request, *api.Response) error
 }
 
 func RegisterSystemSvcHandler(s server.Server, hdlr SystemSvcHandler, opts ...server.HandlerOption) error {
 	type systemSvc interface {
+		GetDPChartAPI(ctx context.Context, in *api.Request, out *api.Response) error
+		GetDPHighChartAPI(ctx context.Context, in *api.Request, out *api.Response) error
+		GetDPLowChartAPI(ctx context.Context, in *api.Request, out *api.Response) error
 	}
 	type SystemSvc struct {
 		systemSvc
@@ -71,4 +111,16 @@ func RegisterSystemSvcHandler(s server.Server, hdlr SystemSvcHandler, opts ...se
 
 type systemSvcHandler struct {
 	SystemSvcHandler
+}
+
+func (h *systemSvcHandler) GetDPChartAPI(ctx context.Context, in *api.Request, out *api.Response) error {
+	return h.SystemSvcHandler.GetDPChartAPI(ctx, in, out)
+}
+
+func (h *systemSvcHandler) GetDPHighChartAPI(ctx context.Context, in *api.Request, out *api.Response) error {
+	return h.SystemSvcHandler.GetDPHighChartAPI(ctx, in, out)
+}
+
+func (h *systemSvcHandler) GetDPLowChartAPI(ctx context.Context, in *api.Request, out *api.Response) error {
+	return h.SystemSvcHandler.GetDPLowChartAPI(ctx, in, out)
 }

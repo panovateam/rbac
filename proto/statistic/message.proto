@@ -2,9 +2,10 @@ syntax = "proto3";
 
 package system.statistic;
 option go_package = "statistic;system_statistic_";
+import  "github.com/panovateam/rbac/proto/api/message.proto";
 
 service SystemSvc {
-//  rpc GetDPChartAPI (api.Request) returns (api.Response);
-//  rpc GetDPHighChartAPI (api.Request) returns (api.Response);
-//  rpc GetDPLowChartAPI (api.Request) returns (api.Response);
+  rpc GetDPChartAPI (api.Request) returns (api.Response);
+  rpc GetDPHighChartAPI (api.Request) returns (api.Response);
+  rpc GetDPLowChartAPI (api.Request) returns (api.Response);
 }
