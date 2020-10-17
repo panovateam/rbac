@@ -6,7 +6,7 @@ package message
 import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
-	proto1 "github.com/micro/go-micro/api/proto"
+	api "github.com/panovateam/rbac/proto/api"
 	math "math"
 )
 
@@ -35,10 +35,9 @@ var _ server.Option
 // Client API for SystemSvc service
 
 type SystemSvcService interface {
-	GetCallingActivating(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
-	GetCountAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
-	GetMapDirectionAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
-	SendObserverEmailAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error)
+	GetDPChartAPI(ctx context.Context, in *api.Request, opts ...client.CallOption) (*api.Response, error)
+	GetDPHighChartAPI(ctx context.Context, in *api.Request, opts ...client.CallOption) (*api.Response, error)
+	GetDPLowChartAPI(ctx context.Context, in *api.Request, opts ...client.CallOption) (*api.Response, error)
 }
 
 type systemSvcService struct {
@@ -59,9 +58,9 @@ func NewSystemSvcService(name string, c client.Client) SystemSvcService {
 	}
 }
 
-func (c *systemSvcService) GetCallingActivating(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error) {
-	req := c.c.NewRequest(c.name, "SystemSvc.GetCallingActivating", in)
-	out := new(proto1.Response)
+func (c *systemSvcService) GetDPChartAPI(ctx context.Context, in *api.Request, opts ...client.CallOption) (*api.Response, error) {
+	req := c.c.NewRequest(c.name, "SystemSvc.GetDPChartAPI", in)
+	out := new(api.Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -69,9 +68,9 @@ func (c *systemSvcService) GetCallingActivating(ctx context.Context, in *proto1.
 	return out, nil
 }
 
-func (c *systemSvcService) GetCountAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error) {
-	req := c.c.NewRequest(c.name, "SystemSvc.GetCountAPI", in)
-	out := new(proto1.Response)
+func (c *systemSvcService) GetDPHighChartAPI(ctx context.Context, in *api.Request, opts ...client.CallOption) (*api.Response, error) {
+	req := c.c.NewRequest(c.name, "SystemSvc.GetDPHighChartAPI", in)
+	out := new(api.Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -79,19 +78,9 @@ func (c *systemSvcService) GetCountAPI(ctx context.Context, in *proto1.Request, 
 	return out, nil
 }
 
-func (c *systemSvcService) GetMapDirectionAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error) {
-	req := c.c.NewRequest(c.name, "SystemSvc.GetMapDirectionAPI", in)
-	out := new(proto1.Response)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *systemSvcService) SendObserverEmailAPI(ctx context.Context, in *proto1.Request, opts ...client.CallOption) (*proto1.Response, error) {
-	req := c.c.NewRequest(c.name, "SystemSvc.SendObserverEmailAPI", in)
-	out := new(proto1.Response)
+func (c *systemSvcService) GetDPLowChartAPI(ctx context.Context, in *api.Request, opts ...client.CallOption) (*api.Response, error) {
+	req := c.c.NewRequest(c.name, "SystemSvc.GetDPLowChartAPI", in)
+	out := new(api.Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -102,18 +91,16 @@ func (c *systemSvcService) SendObserverEmailAPI(ctx context.Context, in *proto1.
 // Server API for SystemSvc service
 
 type SystemSvcHandler interface {
-	GetCallingActivating(context.Context, *proto1.Request, *proto1.Response) error
-	GetCountAPI(context.Context, *proto1.Request, *proto1.Response) error
-	GetMapDirectionAPI(context.Context, *proto1.Request, *proto1.Response) error
-	SendObserverEmailAPI(context.Context, *proto1.Request, *proto1.Response) error
+	GetDPChartAPI(context.Context, *api.Request, *api.Response) error
+	GetDPHighChartAPI(context.Context, *api.Request, *api.Response) error
+	GetDPLowChartAPI(context.Context, *api.Request, *api.Response) error
 }
 
 func RegisterSystemSvcHandler(s server.Server, hdlr SystemSvcHandler, opts ...server.HandlerOption) error {
 	type systemSvc interface {
-		GetCallingActivating(ctx context.Context, in *proto1.Request, out *proto1.Response) error
-		GetCountAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error
-		GetMapDirectionAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error
-		SendObserverEmailAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error
+		GetDPChartAPI(ctx context.Context, in *api.Request, out *api.Response) error
+		GetDPHighChartAPI(ctx context.Context, in *api.Request, out *api.Response) error
+		GetDPLowChartAPI(ctx context.Context, in *api.Request, out *api.Response) error
 	}
 	type SystemSvc struct {
 		systemSvc
@@ -126,18 +113,14 @@ type systemSvcHandler struct {
 	SystemSvcHandler
 }
 
-func (h *systemSvcHandler) GetCallingActivating(ctx context.Context, in *proto1.Request, out *proto1.Response) error {
-	return h.SystemSvcHandler.GetCallingActivating(ctx, in, out)
+func (h *systemSvcHandler) GetDPChartAPI(ctx context.Context, in *api.Request, out *api.Response) error {
+	return h.SystemSvcHandler.GetDPChartAPI(ctx, in, out)
 }
 
-func (h *systemSvcHandler) GetCountAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error {
-	return h.SystemSvcHandler.GetCountAPI(ctx, in, out)
+func (h *systemSvcHandler) GetDPHighChartAPI(ctx context.Context, in *api.Request, out *api.Response) error {
+	return h.SystemSvcHandler.GetDPHighChartAPI(ctx, in, out)
 }
 
-func (h *systemSvcHandler) GetMapDirectionAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error {
-	return h.SystemSvcHandler.GetMapDirectionAPI(ctx, in, out)
-}
-
-func (h *systemSvcHandler) SendObserverEmailAPI(ctx context.Context, in *proto1.Request, out *proto1.Response) error {
-	return h.SystemSvcHandler.SendObserverEmailAPI(ctx, in, out)
+func (h *systemSvcHandler) GetDPLowChartAPI(ctx context.Context, in *api.Request, out *api.Response) error {
+	return h.SystemSvcHandler.GetDPLowChartAPI(ctx, in, out)
 }

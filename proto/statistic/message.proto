@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "github.com/panovateam/rbac/proto/api/api.proto";
+
 service SystemSvc {
   rpc GetDPChartAPI (go.api.Request) returns (go.api.Response);
   rpc GetDPHighChartAPI (go.api.Request) returns (go.api.Response);

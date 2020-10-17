@@ -1,7 +1,13 @@
 #!/bin/bash
 # Generate Micro pb files.
 echo "generating protoc for project $NAME"
-echo $GOPATH/pkg/mod
+
+if [ -z "$GOPATH" ]  
+then  
+    export GOPATH=~/go
+else  
+    echo $GOPATH/pkg/mod
+fi
 protoc \
 -I . \
 -I $GOPATH/src/github.com/envoyproxy/protoc-gen-validate \
